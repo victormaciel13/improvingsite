@@ -8,6 +8,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - `assets/js/main.js`: comportamentos interativos.
 - `tests/`: suíte de testes automatizados para validar a estrutura do site.
 
+
 ## Como executar os testes
 Certifique-se de possuir o Python 3 instalado e execute:
 
