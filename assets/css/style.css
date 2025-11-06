@@ -698,7 +698,6 @@ h1 {
 .form__field--checkbox label {
     font-weight: 500;
 }
-
 .talent__feedback {
     min-height: 1.25rem;
     color: var(--color-muted);

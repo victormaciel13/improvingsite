@@ -30,6 +30,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
    python serve.py --port 8080 --no-browser
    ```
 
+
 ## Como executar os testes
 Certifique-se de possuir o Python 3 instalado e execute:
 
@@ -38,3 +39,4 @@ python -m unittest discover tests
 ```
 
 Os testes verificam se as seções principais estão presentes, se os arquivos de estilos e scripts existem, se há um botão funcional de WhatsApp e se o formulário de cadastro de talentos mantém os campos essenciais e restrições de arquivo.
+Os testes verificam se as seções principais estão presentes, se os arquivos de estilos e scripts existem e se há um botão funcional de WhatsApp, garantindo que os elementos essenciais do site continuem em ordem.
