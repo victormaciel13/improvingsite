@@ -11,6 +11,29 @@ HTML_CONTENT = HTML_PATH.read_text(encoding="utf-8")
 
 
 class TestSiteStructure(unittest.TestCase):
+    def test_source_files_without_merge_conflicts(self):
+        merge_markers = ("<<<<<<<", "=======", ">>>>>>>")
+        tracked_files = [
+            HTML_PATH,
+            CSS_PATH,
+            JS_PATH,
+            BASE_DIR / "README.md",
+            BASE_DIR / "serve.py",
+        ]
+
+        for file_path in tracked_files:
+            with self.subTest(file=file_path.name):
+                content = file_path.read_text(encoding="utf-8")
+                for marker in merge_markers:
+                    self.assertNotIn(
+                        marker,
+                        content,
+                        msg=(
+                            f"O arquivo {file_path.name} contém marcadores de conflito de merge. "
+                            "Resolva os conflitos antes de executar os testes."
+                        ),
+                    )
+
     def test_main_sections_present(self):
         selectors = {
             "hero": r'class=\"hero\"',
