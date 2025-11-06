@@ -234,11 +234,20 @@ talentForm?.addEventListener('submit', (event) => {
 
     if (!nome || !email || !area || !isValidResumeFile(arquivo)) {
         talentFeedback.textContent = 'Preencha nome, e-mail, área de interesse e anexe um currículo válido (PDF, DOC, DOCX, ODT ou RTF).';
+    const arquivoValido =
+        arquivo instanceof File &&
+        arquivo.name &&
+        ["pdf", "doc", "docx", "odt", "rtf"].some((extensao) => arquivo.name.toLowerCase().endsWith(extensao));
+
+    if (!nome || !email || !area || !arquivoValido) {
+        talentFeedback.textContent = 'Preencha nome, e-mail, área de interesse e anexe um currículo válido (PDF, DOC ou similar).';
         talentFeedback.style.color = '#dc2626';
         return;
     }
 
     const talentPool = safeParseJSON(localStorage.getItem(TALENT_STORAGE_KEY), []);
+    const cadastroAnterior = localStorage.getItem('idealTalents');
+    const talentPool = cadastroAnterior ? JSON.parse(cadastroAnterior) : [];
     talentPool.push({
         nome,
         email,
@@ -258,6 +267,7 @@ talentForm?.addEventListener('submit', (event) => {
         desejaAlertas,
         curriculo: arquivo.name
     });
+    localStorage.setItem('idealTalents', JSON.stringify(talentPool));
 
     talentFeedback.textContent = desejaAlertas
         ? 'Cadastro concluído! Você receberá alertas de novas vagas e um consultor entrará em contato em breve.'
