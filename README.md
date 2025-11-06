@@ -7,23 +7,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - `assets/css/style.css`: estilos globais e componentes reutilizáveis.
 - `assets/js/main.js`: comportamentos interativos.
 - `tests/`: suíte de testes automatizados para validar a estrutura do site.
-- `serve.py`: script para subir rapidamente um servidor local e visualizar o site.
 
-## Como visualizar o site localmente
-1. Garanta que você tenha o Python 3 instalado.
-2. No diretório do projeto, execute:
-
-   ```bash
-   python serve.py
-   ```
-
-   O script tentará usar a porta `8000` (ou a primeira disponível) e abrirá o navegador automaticamente. Use `Ctrl+C` para encerrar.
-
-   Para escolher outra porta ou impedir a abertura automática do navegador, utilize:
-
-   ```bash
-   python serve.py --port 8080 --no-browser
-   ```
 
 ## Como executar os testes
 Certifique-se de possuir o Python 3 instalado e execute:
