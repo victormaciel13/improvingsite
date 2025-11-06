@@ -11,6 +11,136 @@ const talentFeedback = document.querySelector('.talent__feedback');
 const contactForm = document.querySelector('.contact__form');
 const formFeedback = document.querySelector('.form__feedback');
 const favoritoButtons = document.querySelectorAll('[data-action="favorito"]');
+const profileForm = document.getElementById('profile-form');
+const profileFeedback = document.querySelector('.profile__feedback');
+const profileFields = {
+    nome: document.querySelector('[data-profile-field="nome"]'),
+    email: document.querySelector('[data-profile-field="email"]'),
+    telefone: document.querySelector('[data-profile-field="telefone"]'),
+    area: document.querySelector('[data-profile-field="area"]'),
+    alertas: document.querySelector('[data-profile-field="alertas"]'),
+    atualizado: document.querySelector('[data-profile-field="atualizado"]')
+};
+const profileFileDisplay = document.querySelector('[data-profile-file]');
+const profileAlertsToggle = document.getElementById('profile-alertas');
+const profileAreaSelect = document.getElementById('profile-area');
+const profileResumeInput = document.getElementById('profile-curriculo');
+
+const TALENT_STORAGE_KEY = 'idealTalents';
+const PROFILE_STORAGE_KEY = 'idealTalentProfile';
+const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
+
+function safeParseJSON(value, fallback) {
+    try {
+        return value ? JSON.parse(value) : fallback;
+    } catch (error) {
+        console.warn('Não foi possível interpretar os dados salvos.', error);
+        return fallback;
+    }
+}
+
+function isValidResumeFile(file) {
+    if (!file || typeof file !== 'object') {
+        return false;
+    }
+    const fileName = typeof file.name === 'string' ? file.name : '';
+    if (!fileName) {
+        return false;
+    }
+    return ALLOWED_RESUME_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
+
+function getStoredProfile() {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
+    return safeParseJSON(stored, null);
+}
+
+function saveProfile(profile) {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+function formatProfileDate(dateString) {
+    if (!dateString) {
+        return 'Nenhum cadastro encontrado';
+    }
+
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) {
+        return 'Nenhum cadastro encontrado';
+    }
+
+    return parsed.toLocaleString('pt-BR', {
+        dateStyle: 'long',
+        timeStyle: 'short'
+    });
+}
+
+function getAreaLabel(value) {
+    if (!value) {
+        return '—';
+    }
+    const option = profileAreaSelect?.querySelector(`option[value="${value}"]`);
+    return option ? option.textContent : value;
+}
+
+function updateProfileUI(profile) {
+    const hasProfile = Boolean(profile);
+    profileFields.nome && (profileFields.nome.textContent = hasProfile ? profile.nome : 'Cadastre-se para preencher seu perfil.');
+    profileFields.email && (profileFields.email.textContent = hasProfile && profile.email ? profile.email : '—');
+    profileFields.telefone && (profileFields.telefone.textContent = hasProfile && profile.telefone ? profile.telefone : '—');
+    profileFields.area && (profileFields.area.textContent = hasProfile ? getAreaLabel(profile.area) : '—');
+    profileFields.alertas &&
+        (profileFields.alertas.textContent = hasProfile ? (profile.desejaAlertas ? 'Ativados' : 'Desativados') : '—');
+    profileFields.atualizado &&
+        (profileFields.atualizado.textContent = hasProfile ? formatProfileDate(profile.atualizadoEm) : 'Nenhum cadastro encontrado');
+
+    if (profileForm) {
+        const formElements = profileForm.elements;
+        const nomeInput = formElements.namedItem ? formElements.namedItem('nome') : null;
+        const emailInput = formElements.namedItem ? formElements.namedItem('email') : null;
+        const telefoneInput = formElements.namedItem ? formElements.namedItem('telefone') : null;
+
+        if (nomeInput) {
+            nomeInput.value = hasProfile && profile.nome ? profile.nome : '';
+        }
+        if (emailInput) {
+            emailInput.value = hasProfile && profile.email ? profile.email : '';
+        }
+        if (telefoneInput) {
+            telefoneInput.value = hasProfile && profile.telefone ? profile.telefone : '';
+        }
+        if (profileAreaSelect) {
+            profileAreaSelect.value = hasProfile && profile.area ? profile.area : '';
+        }
+        if (profileAlertsToggle) {
+            profileAlertsToggle.checked = Boolean(hasProfile && profile.desejaAlertas);
+        }
+    }
+
+    if (profileFileDisplay) {
+        profileFileDisplay.textContent = hasProfile && profile.curriculo ? profile.curriculo : 'Nenhum arquivo cadastrado';
+    }
+
+    if (profileResumeInput) {
+        profileResumeInput.value = '';
+    }
+}
+
+function initializeProfile() {
+    const storedProfile = getStoredProfile();
+    updateProfileUI(storedProfile);
+}
+
+function syncProfileFromTalent(talentData) {
+    const profileData = {
+        ...talentData,
+        atualizadoEm: new Date().toISOString()
+    };
+    saveProfile(profileData);
+    updateProfileUI(profileData);
+}
+
+initializeProfile();
 
 function toggleMenu() {
     const expanded = navToggle.getAttribute('aria-expanded') === 'true';
@@ -102,6 +232,8 @@ talentForm?.addEventListener('submit', (event) => {
     const desejaAlertas = formData.get('alertas') === 'sim';
     const arquivo = formData.get('curriculo');
 
+    if (!nome || !email || !area || !isValidResumeFile(arquivo)) {
+        talentFeedback.textContent = 'Preencha nome, e-mail, área de interesse e anexe um currículo válido (PDF, DOC, DOCX, ODT ou RTF).';
     const arquivoValido =
         arquivo instanceof File &&
         arquivo.name &&
@@ -113,6 +245,7 @@ talentForm?.addEventListener('submit', (event) => {
         return;
     }
 
+    const talentPool = safeParseJSON(localStorage.getItem(TALENT_STORAGE_KEY), []);
     const cadastroAnterior = localStorage.getItem('idealTalents');
     const talentPool = cadastroAnterior ? JSON.parse(cadastroAnterior) : [];
     talentPool.push({
@@ -124,6 +257,16 @@ talentForm?.addEventListener('submit', (event) => {
         curriculo: arquivo.name,
         criadoEm: new Date().toISOString()
     });
+    localStorage.setItem(TALENT_STORAGE_KEY, JSON.stringify(talentPool));
+
+    syncProfileFromTalent({
+        nome,
+        email,
+        telefone,
+        area,
+        desejaAlertas,
+        curriculo: arquivo.name
+    });
     localStorage.setItem('idealTalents', JSON.stringify(talentPool));
 
     talentFeedback.textContent = desejaAlertas
@@ -131,6 +274,66 @@ talentForm?.addEventListener('submit', (event) => {
         : 'Cadastro concluído! Entraremos em contato quando houver oportunidades compatíveis.';
     talentFeedback.style.color = '#16a34a';
     talentForm.reset();
+});
+
+profileForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!profileFeedback) {
+        return;
+    }
+
+    const formData = new FormData(profileForm);
+    const nome = formData.get('nome')?.toString().trim();
+    const email = formData.get('email')?.toString().trim();
+    const telefone = formData.get('telefone')?.toString().trim();
+    const area = formData.get('area')?.toString();
+    const desejaAlertas = formData.get('alertas') === 'sim';
+    const arquivo = formData.get('curriculo');
+    const storedProfile = getStoredProfile();
+
+    if (!nome || !email || !area) {
+        profileFeedback.textContent = 'Informe nome, e-mail e área de interesse para atualizar seu cadastro.';
+        profileFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    const hasNewFile = arquivo && typeof arquivo === 'object' && typeof arquivo.name === 'string' && arquivo.name !== '';
+
+    if (hasNewFile && !isValidResumeFile(arquivo)) {
+        profileFeedback.textContent = 'Selecione um currículo válido (PDF, DOC, DOCX, ODT ou RTF).';
+        profileFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    const curriculoNome = hasNewFile ? arquivo.name : storedProfile?.curriculo ?? '';
+
+    const profileData = {
+        nome,
+        email,
+        telefone,
+        area,
+        desejaAlertas,
+        curriculo: curriculoNome,
+        atualizadoEm: new Date().toISOString()
+    };
+
+    saveProfile(profileData);
+    updateProfileUI(profileData);
+    profileFeedback.textContent = 'Perfil atualizado com sucesso! Suas preferências foram salvas.';
+    profileFeedback.style.color = '#16a34a';
+});
+
+profileResumeInput?.addEventListener('change', () => {
+    if (!profileFileDisplay) {
+        return;
+    }
+    const file = profileResumeInput.files?.[0];
+    if (file) {
+        profileFileDisplay.textContent = file.name;
+    } else {
+        const storedProfile = getStoredProfile();
+        profileFileDisplay.textContent = storedProfile?.curriculo ?? 'Nenhum arquivo cadastrado';
+    }
 });
 
 contactForm?.addEventListener('submit', (event) => {

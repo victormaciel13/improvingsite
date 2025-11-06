@@ -41,6 +41,7 @@ class TestSiteStructure(unittest.TestCase):
             "servicos": r'id=\"servicos\"',
             "vagas": r'id=\"vagas\"',
             "cadastro": r'id=\"cadastro\"',
+            "perfil": r'id=\"perfil\"',
             "processo": r'id=\"processo\"',
             "contato": r'id=\"contato\"',
         }
@@ -115,6 +116,38 @@ class TestSiteStructure(unittest.TestCase):
                     accepted_formats,
                     f"O campo de currículo deve aceitar o formato {expected}.",
                 )
+
+    def test_profile_section_has_editing_capabilities(self):
+        self.assertIsNotNone(
+            re.search(r'id=\"perfil\"', HTML_CONTENT),
+            msg="A área de perfil deve estar presente para permitir atualizações de cadastro.",
+        )
+
+        profile_fields = {
+            "nome": r'id=\"profile-nome\"',
+            "email": r'id=\"profile-email\"',
+            "area": r'id=\"profile-area\"',
+            "curriculo": r'id=\"profile-curriculo\"',
+        }
+
+        for field, pattern in profile_fields.items():
+            with self.subTest(field=field):
+                self.assertIsNotNone(
+                    re.search(pattern, HTML_CONTENT),
+                    msg=f"O campo '{field}' deve estar presente no formulário de edição de perfil.",
+                )
+
+        profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', HTML_CONTENT)
+        self.assertIsNotNone(
+            profile_checkbox,
+            "O formulário de perfil deve permitir ativar ou desativar alertas por e-mail.",
+        )
+        if profile_checkbox:
+            self.assertIn(
+                'type="checkbox"',
+                profile_checkbox.group(0),
+                "O campo de alertas deve ser um checkbox para controlar as notificações.",
+            )
 
 
 if __name__ == "__main__":

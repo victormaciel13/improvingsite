@@ -29,6 +29,7 @@
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
                     <li><a href="#cadastro">Cadastre-se</a></li>
+                    <li><a href="#perfil">Meu perfil</a></li>
                     <li><a href="#processo">Como funciona</a></li>
                     <li><a href="#contato">Contato</a></li>
                 </ul>
@@ -297,6 +298,79 @@
             </div>
         </section>
 
+        <section class="profile" id="perfil" aria-labelledby="perfil-title">
+            <div class="container profile__grid">
+                <div class="profile__summary">
+                    <p class="tag">Minha conta</p>
+                    <h2 id="perfil-title">Acompanhe e atualize seu cadastro</h2>
+                    <p>Gerencie seus dados profissionais, mantenha o currículo em dia e escolha como deseja receber novidades da Ideal Empregos.</p>
+                    <dl class="profile__details">
+                        <div>
+                            <dt>Nome</dt>
+                            <dd data-profile-field="nome">Cadastre-se para preencher seu perfil.</dd>
+                        </div>
+                        <div>
+                            <dt>E-mail</dt>
+                            <dd data-profile-field="email">—</dd>
+                        </div>
+                        <div>
+                            <dt>Telefone</dt>
+                            <dd data-profile-field="telefone">—</dd>
+                        </div>
+                        <div>
+                            <dt>Área de interesse</dt>
+                            <dd data-profile-field="area">—</dd>
+                        </div>
+                        <div>
+                            <dt>Alertas por e-mail</dt>
+                            <dd data-profile-field="alertas">—</dd>
+                        </div>
+                    </dl>
+                    <p class="profile__note">Última atualização: <span data-profile-field="atualizado">Nenhum cadastro encontrado</span></p>
+                </div>
+                <form class="profile__form" id="profile-form" novalidate>
+                    <fieldset>
+                        <legend>Atualize seus dados</legend>
+                        <div class="form__field">
+                            <label for="profile-nome">Nome completo</label>
+                            <input type="text" id="profile-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-email">E-mail</label>
+                            <input type="email" id="profile-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-telefone">Telefone</label>
+                            <input type="tel" id="profile-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-area">Área de interesse</label>
+                            <select id="profile-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-curriculo">Atualizar currículo (opcional)</label>
+                            <input type="file" id="profile-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf">
+                            <p class="profile__file" role="status" aria-live="polite">Currículo atual: <span data-profile-file>Nenhum arquivo cadastrado</span></p>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="profile-alertas" name="alertas" value="sim">
+                            <label for="profile-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--secondary" type="submit">Salvar alterações</button>
+                    <p class="profile__feedback" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+
         <section class="testimonials" aria-labelledby="depoimentos-title">
             <div class="container">
                 <h2 id="depoimentos-title">Histórias reais de sucesso</h2>
@@ -501,6 +575,7 @@
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
                     <li><a href="#cadastro">Cadastre seu currículo</a></li>
+                    <li><a href="#perfil">Meu perfil</a></li>
                     <li><a href="#processo">Processo</a></li>
                 </ul>
             </div>
