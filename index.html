@@ -28,6 +28,7 @@
                     <li><a href="#sobre">Sobre</a></li>
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
+                    <li><a href="#cadastro">Cadastre-se</a></li>
                     <li><a href="#processo">Como funciona</a></li>
                     <li><a href="#contato">Contato</a></li>
                 </ul>
@@ -240,6 +241,61 @@
             </div>
         </section>
 
+        <section class="talent" id="cadastro" aria-labelledby="cadastro-title">
+            <div class="container talent__grid">
+                <div class="talent__content">
+                    <p class="tag">Banco de talentos</p>
+                    <h2 id="cadastro-title">Cadastre seu currículo e receba alertas personalizados</h2>
+                    <p>Fortaleça sua jornada profissional compartilhando seu perfil com nossos consultores. Avisamos por e-mail sempre que surgir uma oportunidade alinhada ao seu interesse.</p>
+                    <ul class="talent__highlights">
+                        <li>Match inteligente com vagas recém-publicadas</li>
+                        <li>Acompanhamento individual com especialistas de carreira</li>
+                        <li>Convites prioritários para eventos e mentorias exclusivas</li>
+                    </ul>
+                </div>
+                <form class="talent__form" id="talent-form" enctype="multipart/form-data" novalidate>
+                    <fieldset>
+                        <legend>Dados do candidato</legend>
+                        <div class="form__field">
+                            <label for="talent-nome">Nome completo</label>
+                            <input type="text" id="talent-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-email">E-mail</label>
+                            <input type="email" id="talent-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-telefone">Telefone</label>
+                            <input type="tel" id="talent-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-area">Área de interesse</label>
+                            <select id="talent-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-curriculo">Currículo (PDF ou DOC)</label>
+                            <input type="file" id="talent-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf" required>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="talent-alertas" name="alertas" value="sim" checked>
+                            <label for="talent-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--primary" type="submit">Enviar currículo</button>
+                    <p class="talent__feedback" role="status" aria-live="polite"></p>
+                    <p class="talent__privacy">Mantemos seus dados seguros e você pode atualizar o cadastro sempre que desejar.</p>
+                </form>
+            </div>
+        </section>
+
         <section class="testimonials" aria-labelledby="depoimentos-title">
             <div class="container">
                 <h2 id="depoimentos-title">Histórias reais de sucesso</h2>
@@ -442,6 +498,7 @@
                     <li><a href="#sobre">Sobre</a></li>
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
+                    <li><a href="#cadastro">Cadastre seu currículo</a></li>
                     <li><a href="#processo">Processo</a></li>
                 </ul>
             </div>

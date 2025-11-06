@@ -6,6 +6,8 @@ const filtroArea = document.getElementById('filtro-area');
 const filtroModalidade = document.getElementById('filtro-modalidade');
 const newsletterForm = document.querySelector('.newsletter__form');
 const newsletterFeedback = document.querySelector('.newsletter__feedback');
+const talentForm = document.getElementById('talent-form');
+const talentFeedback = document.querySelector('.talent__feedback');
 const contactForm = document.querySelector('.contact__form');
 const formFeedback = document.querySelector('.form__feedback');
 const favoritoButtons = document.querySelectorAll('[data-action="favorito"]');
@@ -85,6 +87,50 @@ newsletterForm?.addEventListener('submit', (event) => {
     newsletterFeedback.textContent = 'Inscrição realizada com sucesso! Você receberá nossas novidades em breve.';
     newsletterFeedback.style.color = '#16a34a';
     newsletterForm.reset();
+});
+
+talentForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!talentFeedback) {
+        return;
+    }
+    const formData = new FormData(talentForm);
+    const nome = formData.get('nome')?.toString().trim();
+    const email = formData.get('email')?.toString().trim();
+    const area = formData.get('area')?.toString();
+    const telefone = formData.get('telefone')?.toString().trim();
+    const desejaAlertas = formData.get('alertas') === 'sim';
+    const arquivo = formData.get('curriculo');
+
+    const arquivoValido =
+        arquivo instanceof File &&
+        arquivo.name &&
+        ["pdf", "doc", "docx", "odt", "rtf"].some((extensao) => arquivo.name.toLowerCase().endsWith(extensao));
+
+    if (!nome || !email || !area || !arquivoValido) {
+        talentFeedback.textContent = 'Preencha nome, e-mail, área de interesse e anexe um currículo válido (PDF, DOC ou similar).';
+        talentFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    const cadastroAnterior = localStorage.getItem('idealTalents');
+    const talentPool = cadastroAnterior ? JSON.parse(cadastroAnterior) : [];
+    talentPool.push({
+        nome,
+        email,
+        telefone,
+        area,
+        desejaAlertas,
+        curriculo: arquivo.name,
+        criadoEm: new Date().toISOString()
+    });
+    localStorage.setItem('idealTalents', JSON.stringify(talentPool));
+
+    talentFeedback.textContent = desejaAlertas
+        ? 'Cadastro concluído! Você receberá alertas de novas vagas e um consultor entrará em contato em breve.'
+        : 'Cadastro concluído! Entraremos em contato quando houver oportunidades compatíveis.';
+    talentFeedback.style.color = '#16a34a';
+    talentForm.reset();
 });
 
 contactForm?.addEventListener('submit', (event) => {

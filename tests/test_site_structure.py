@@ -11,12 +11,36 @@ HTML_CONTENT = HTML_PATH.read_text(encoding="utf-8")
 
 
 class TestSiteStructure(unittest.TestCase):
+    def test_source_files_without_merge_conflicts(self):
+        merge_markers = ("<<<<<<<", "=======", ">>>>>>>")
+        tracked_files = [
+            HTML_PATH,
+            CSS_PATH,
+            JS_PATH,
+            BASE_DIR / "README.md",
+            BASE_DIR / "serve.py",
+        ]
+
+        for file_path in tracked_files:
+            with self.subTest(file=file_path.name):
+                content = file_path.read_text(encoding="utf-8")
+                for marker in merge_markers:
+                    self.assertNotIn(
+                        marker,
+                        content,
+                        msg=(
+                            f"O arquivo {file_path.name} contém marcadores de conflito de merge. "
+                            "Resolva os conflitos antes de executar os testes."
+                        ),
+                    )
+
     def test_main_sections_present(self):
         selectors = {
             "hero": r'class=\"hero\"',
             "sobre": r'id=\"sobre\"',
             "servicos": r'id=\"servicos\"',
             "vagas": r'id=\"vagas\"',
+            "cadastro": r'id=\"cadastro\"',
             "processo": r'id=\"processo\"',
             "contato": r'id=\"contato\"',
         }
@@ -66,6 +90,31 @@ class TestSiteStructure(unittest.TestCase):
             0,
             "O arquivo de scripts não pode estar vazio.",
         )
+
+    def test_talent_form_has_required_fields(self):
+        required_fields = {
+            "nome": r'id=\"talent-nome\"',
+            "email": r'id=\"talent-email\"',
+            "area": r'id=\"talent-area\"',
+            "curriculo": r'id=\"talent-curriculo\"',
+        }
+        for field, pattern in required_fields.items():
+            with self.subTest(field=field):
+                self.assertIsNotNone(
+                    re.search(pattern, HTML_CONTENT),
+                    msg=f"O campo '{field}' deve estar presente no formulário de cadastro de talentos.",
+                )
+
+        file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', HTML_CONTENT)
+        self.assertIsNotNone(file_accept_match, "O upload de currículo deve restringir os formatos permitidos.")
+        if file_accept_match:
+            accepted_formats = file_accept_match.group(1)
+            for expected in [".pdf", ".doc", ".docx"]:
+                self.assertIn(
+                    expected,
+                    accepted_formats,
+                    f"O campo de currículo deve aceitar o formato {expected}.",
+                )
 
 
 if __name__ == "__main__":
