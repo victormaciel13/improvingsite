@@ -25,12 +25,13 @@
                     <span></span>
                 </button>
                 <ul id="menu-principal">
-                    <li><a href="#sobre">Sobre</a></li>
-                    <li><a href="#servicos">Serviços</a></li>
-                    <li><a href="#vagas">Vagas</a></li>
-                    <li><a href="#perfil">Meu perfil</a></li>
-                    <li><a href="#processo">Como funciona</a></li>
-                    <li><a href="#contato">Contato</a></li>
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Como funciona</a></li>
+                    <li><a href="home.html#contato">Contato</a></li>
                     <li class="main-nav__cta"><a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a></li>
                 </ul>
             </nav>
@@ -186,7 +187,7 @@
                         <li>Inglês avançado</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#cadastro" data-action="candidatar" data-job-title="Desenvolvedor(a) Full Stack" data-job-target="#vaga-tecnologia-fullstack">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="cadastro.html" data-action="candidatar" data-job-title="Desenvolvedor(a) Full Stack" data-job-target="#vaga-tecnologia-fullstack">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                     <p class="job-card__feedback" data-job-feedback="vaga-tecnologia-fullstack" role="status" aria-live="polite" hidden></p>
@@ -203,7 +204,7 @@
                         <li>Especialização em gestão hospitalar</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#cadastro" data-action="candidatar" data-job-title="Coordenador(a) de Enfermagem" data-job-target="#vaga-saude-coordenacao">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="cadastro.html" data-action="candidatar" data-job-title="Coordenador(a) de Enfermagem" data-job-target="#vaga-saude-coordenacao">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                     <p class="job-card__feedback" data-job-feedback="vaga-saude-coordenacao" role="status" aria-live="polite" hidden></p>
@@ -220,7 +221,7 @@
                         <li>Excel avançado e Power BI</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#cadastro" data-action="candidatar" data-job-title="Analista Financeiro Sênior" data-job-target="#vaga-financeiro-analista">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="cadastro.html" data-action="candidatar" data-job-title="Analista Financeiro Sênior" data-job-target="#vaga-financeiro-analista">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                     <p class="job-card__feedback" data-job-feedback="vaga-financeiro-analista" role="status" aria-live="polite" hidden></p>
@@ -237,7 +238,7 @@
                         <li>Experiência com marketing de produto</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#cadastro" data-action="candidatar" data-job-title="Especialista em Growth Marketing" data-job-target="#vaga-marketing-growth">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="cadastro.html" data-action="candidatar" data-job-title="Especialista em Growth Marketing" data-job-target="#vaga-marketing-growth">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                     <p class="job-card__feedback" data-job-feedback="vaga-marketing-growth" role="status" aria-live="polite" hidden></p>
@@ -245,141 +246,26 @@
             </div>
         </section>
 
-        <section class="talent" id="cadastro" aria-labelledby="cadastro-title">
-            <div class="container talent__grid">
-                <div class="talent__content">
+        <section class="registration-gateway" aria-labelledby="registration-gateway-title">
+            <div class="container registration-gateway__grid">
+                <div class="registration-gateway__intro">
                     <p class="tag">Banco de talentos</p>
-                    <h2 id="cadastro-title">Cadastre seu currículo e receba alertas personalizados</h2>
-                    <p>Fortaleça sua jornada profissional compartilhando seu perfil com nossos consultores. Avisamos por e-mail sempre que surgir uma oportunidade alinhada ao seu interesse.</p>
-                    <ul class="talent__highlights">
-                        <li>Match inteligente com vagas recém-publicadas</li>
-                        <li>Acompanhamento individual com especialistas de carreira</li>
-                        <li>Convites prioritários para eventos e mentorias exclusivas</li>
-                    </ul>
+                    <h2 id="registration-gateway-title">Gerencie seu cadastro em páginas dedicadas</h2>
+                    <p>Agora o cadastro inicial e a atualização de dados ganharam ambientes próprios. Escolha abaixo o que deseja fazer e continue sua jornada com a Ideal Empregos.</p>
+                    <p class="registration-gateway__note">Você precisa estar autenticado para acessar as páginas exclusivas do banco de talentos.</p>
                 </div>
-                <form class="talent__form" id="talent-form" enctype="multipart/form-data" novalidate>
-                    <fieldset>
-                        <legend>Dados do candidato</legend>
-                        <div class="form__field">
-                            <label for="talent-nome">Nome completo</label>
-                            <input type="text" id="talent-nome" name="nome" placeholder="Seu nome" required>
-                        </div>
-                        <div class="form__field">
-                            <label for="talent-email">E-mail</label>
-                            <input type="email" id="talent-email" name="email" placeholder="Seu melhor e-mail" required>
-                        </div>
-                        <div class="form__field">
-                            <label for="talent-senha">Crie uma senha</label>
-                            <input type="password" id="talent-senha" name="senha" placeholder="Mínimo de 6 caracteres" minlength="6" required>
-                            <p class="form__hint">Use esta senha para fazer login e acompanhar suas recomendações.</p>
-                        </div>
-                        <div class="form__field">
-                            <label for="talent-telefone">Telefone</label>
-                            <input type="tel" id="talent-telefone" name="telefone" placeholder="(00) 00000-0000">
-                        </div>
-                        <div class="form__field">
-                            <label for="talent-area">Área de interesse</label>
-                            <select id="talent-area" name="area" required>
-                                <option value="">Selecione uma área</option>
-                                <option value="tecnologia">Tecnologia</option>
-                                <option value="saude">Saúde</option>
-                                <option value="financeiro">Financeiro</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="industrial">Industrial</option>
-                                <option value="administrativo">Administrativo</option>
-                            </select>
-                        </div>
-                        <div class="form__field">
-                            <label for="talent-curriculo">Currículo (PDF ou DOC)</label>
-                            <input type="file" id="talent-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf" required>
-                        </div>
-                        <div class="form__field form__field--checkbox">
-                            <input type="checkbox" id="talent-alertas" name="alertas" value="sim" checked>
-                            <label for="talent-alertas">Quero receber novas vagas por e-mail</label>
-                        </div>
-                    </fieldset>
-                    <button class="btn btn--primary" type="submit">Enviar currículo</button>
-                    <p class="talent__feedback" role="status" aria-live="polite"></p>
-                    <p class="talent__privacy">Mantemos seus dados seguros e você pode atualizar o cadastro sempre que desejar.</p>
-                </form>
-            </div>
-        </section>
-
-        <section class="profile" id="perfil" aria-labelledby="perfil-title">
-            <div class="container profile__grid">
-                <div class="profile__summary">
-                    <p class="tag">Minha conta</p>
-                    <h2 id="perfil-title">Acompanhe e atualize seu cadastro</h2>
-                    <p>Gerencie seus dados profissionais, mantenha o currículo em dia e escolha como deseja receber novidades da Ideal Empregos.</p>
-                    <dl class="profile__details">
-                        <div>
-                            <dt>Nome</dt>
-                            <dd data-profile-field="nome">Cadastre-se para preencher seu perfil.</dd>
-                        </div>
-                        <div>
-                            <dt>E-mail</dt>
-                            <dd data-profile-field="email">—</dd>
-                        </div>
-                        <div>
-                            <dt>Telefone</dt>
-                            <dd data-profile-field="telefone">—</dd>
-                        </div>
-                        <div>
-                            <dt>Área de interesse</dt>
-                            <dd data-profile-field="area">—</dd>
-                        </div>
-                        <div>
-                            <dt>Alertas por e-mail</dt>
-                            <dd data-profile-field="alertas">—</dd>
-                        </div>
-                    </dl>
-                    <p class="profile__note">Última atualização: <span data-profile-field="atualizado">Nenhum cadastro encontrado</span></p>
+                <div class="registration-gateway__actions">
+                    <article class="registration-card">
+                        <h3>Quero cadastrar meu currículo</h3>
+                        <p>Informe seus dados, faça upload do currículo e ative os alertas por e-mail para receber oportunidades compatíveis.</p>
+                        <a class="btn btn--primary" href="cadastro.html">Ir para cadastro</a>
+                    </article>
+                    <article class="registration-card">
+                        <h3>Preciso atualizar meu cadastro</h3>
+                        <p>Revise informações pessoais, preferências de vagas e substitua documentos quando necessário.</p>
+                        <a class="btn btn--secondary" href="perfil.html">Ir para atualização</a>
+                    </article>
                 </div>
-                <form class="profile__form" id="profile-form" enctype="multipart/form-data" novalidate>
-                    <fieldset>
-                        <legend>Atualize seus dados</legend>
-                        <div class="form__field">
-                            <label for="profile-nome">Nome completo</label>
-                            <input type="text" id="profile-nome" name="nome" placeholder="Seu nome" required>
-                        </div>
-                        <div class="form__field">
-                            <label for="profile-email">E-mail</label>
-                            <input type="email" id="profile-email" name="email" placeholder="Seu melhor e-mail" required>
-                        </div>
-                        <div class="form__field">
-                            <label for="profile-telefone">Telefone</label>
-                            <input type="tel" id="profile-telefone" name="telefone" placeholder="(00) 00000-0000">
-                        </div>
-                        <div class="form__field">
-                            <label for="profile-area">Área de interesse</label>
-                            <select id="profile-area" name="area" required>
-                                <option value="">Selecione uma área</option>
-                                <option value="tecnologia">Tecnologia</option>
-                                <option value="saude">Saúde</option>
-                                <option value="financeiro">Financeiro</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="industrial">Industrial</option>
-                                <option value="administrativo">Administrativo</option>
-                            </select>
-                        </div>
-                        <div class="form__field">
-                            <label for="profile-senha">Atualizar senha (opcional)</label>
-                            <input type="password" id="profile-senha" name="senha" placeholder="Digite uma nova senha" minlength="6">
-                            <p class="form__hint">Preencha apenas se desejar alterar sua senha atual.</p>
-                        </div>
-                        <div class="form__field">
-                            <label for="profile-curriculo">Atualizar currículo (opcional)</label>
-                            <input type="file" id="profile-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf">
-                            <p class="profile__file" role="status" aria-live="polite">Currículo atual: <span data-profile-file>Nenhum arquivo cadastrado</span></p>
-                        </div>
-                        <div class="form__field form__field--checkbox">
-                            <input type="checkbox" id="profile-alertas" name="alertas" value="sim">
-                            <label for="profile-alertas">Quero receber novas vagas por e-mail</label>
-                        </div>
-                    </fieldset>
-                    <button class="btn btn--secondary" type="submit">Salvar alterações</button>
-                    <p class="profile__feedback" role="status" aria-live="polite"></p>
-                </form>
             </div>
         </section>
 
@@ -532,7 +418,7 @@
                             </div>
                         </li>
                     </ul>
-                    <a class="btn btn--primary" href="#cadastro" aria-label="Ir para a seção de cadastro de talentos">
+                    <a class="btn btn--primary" href="perfil.html" aria-label="Ir para a página de atualização de cadastro">
                         <span aria-hidden="true">📝</span>
                         Atualizar meu cadastro
                     </a>
@@ -613,12 +499,12 @@
             <div>
                 <h3>Links úteis</h3>
                 <ul>
-                    <li><a href="#sobre">Sobre</a></li>
-                    <li><a href="#servicos">Serviços</a></li>
-                    <li><a href="#vagas">Vagas</a></li>
-                    <li><a href="#cadastro">Cadastre seu currículo</a></li>
-                    <li><a href="#perfil">Meu perfil</a></li>
-                    <li><a href="#processo">Processo</a></li>
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Processo</a></li>
                 </ul>
             </div>
             <div>

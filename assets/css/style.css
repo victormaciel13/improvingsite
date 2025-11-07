@@ -122,6 +122,10 @@ img {
     color: var(--color-primary);
 }
 
+.main-nav a[aria-current="page"] {
+    color: var(--color-primary);
+}
+
 .main-nav__cta {
     margin-left: auto;
 }
@@ -191,6 +195,50 @@ h1 {
     color: var(--color-muted);
     max-width: 520px;
     margin-bottom: 1.8rem;
+}
+
+.page-hero {
+    padding: 4rem 0 3rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 118, 110, 0.05));
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.page-hero__content {
+    display: grid;
+    gap: 2rem;
+}
+
+.page-hero__content > div {
+    max-width: 640px;
+    display: grid;
+    gap: 1rem;
+}
+
+.page-hero__subtitle {
+    color: var(--color-muted);
+    font-size: 1.05rem;
+}
+
+.page-hero__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.page-hero__list li {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.page-hero__list li::before {
+    content: "✔";
+    color: var(--color-primary);
+    font-size: 0.9rem;
 }
 
 .hero__actions {
@@ -1030,6 +1078,53 @@ h1 {
     color: var(--color-muted);
 }
 
+.talent--standalone {
+    padding: 5rem 0 6rem;
+}
+
+.talent--standalone .talent__content {
+    max-width: 420px;
+}
+
+.registration-gateway {
+    padding: 4.5rem 0;
+    background: var(--color-surface);
+}
+
+.registration-gateway__grid {
+    display: grid;
+    gap: 3rem;
+    align-items: start;
+}
+
+.registration-gateway__note {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.registration-gateway__actions {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.registration-card {
+    background: var(--color-surface);
+    padding: 2.3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    gap: 1.2rem;
+}
+
+.registration-card h3 {
+    font-size: 1.3rem;
+}
+
+.registration-card p {
+    color: var(--color-muted);
+}
+
 .profile {
     padding: 6rem 0;
     background: #f1f5f9;
@@ -1128,6 +1223,15 @@ h1 {
     font-weight: 600;
 }
 
+.profile--standalone {
+    padding: 5rem 0 6rem;
+}
+
+.profile--standalone .profile__summary,
+.profile--standalone .profile__form {
+    min-height: 100%;
+}
+
 @media (max-width: 640px) {
     .talent__form {
         padding: 1.8rem;
@@ -1148,6 +1252,14 @@ h1 {
     .profile__summary,
     .profile__form {
         padding: 2rem;
+    }
+
+    .page-hero {
+        padding: 3.2rem 0 2.4rem;
+    }
+
+    .registration-gateway__actions {
+        grid-template-columns: 1fr;
     }
 }
 

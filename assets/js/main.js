@@ -592,7 +592,7 @@ const assistantAnswers = [
     {
         triggers: ['cadastro', 'registrar', 'inscrever', 'conta'],
         response:
-            'Para se cadastrar, acesse a seção “Cadastre seu currículo”, preencha seus dados, anexe o currículo e escolha se deseja receber alertas. Assim que salvar, você poderá acompanhar tudo na área "Meu perfil".',
+            'Para se cadastrar, acesse a página “Cadastre seu currículo” no menu superior, preencha seus dados, anexe o currículo e escolha se deseja receber alertas. Assim que salvar, você poderá acompanhar tudo na página “Atualize seu cadastro”.',
     },
     {
         triggers: ['recomendacoes', 'recomendação', 'recomendado', 'alerta', 'novas vagas', 'newsletter'],
@@ -602,7 +602,7 @@ const assistantAnswers = [
     {
         triggers: ['curriculo', 'currículo', 'atualizar', 'documento'],
         response:
-            'Você pode atualizar currículo, dados pessoais e preferências acessando a seção "Meu perfil". Basta enviar o novo arquivo e salvar para manter tudo em dia.',
+            'Você pode atualizar currículo, dados pessoais e preferências acessando a página “Atualize seu cadastro”. Basta enviar o novo arquivo e salvar para manter tudo em dia.',
     },
     {
         triggers: ['login', 'senha', 'acesso'],
@@ -620,7 +620,7 @@ const quickPrompts = {
     cadastro: {
         question: 'Como faço meu cadastro?',
         response:
-            'Para se cadastrar, clique na seção “Cadastre seu currículo”, informe seus dados, defina uma senha e anexe o currículo. Em seguida, você já pode acompanhar tudo em "Meu perfil".',
+            'Para se cadastrar, clique na página “Cadastre seu currículo”, informe seus dados, defina uma senha e anexe o currículo. Em seguida, você já pode acompanhar tudo na página “Atualize seu cadastro”.',
     },
     recomendacoes: {
         question: 'Receberei vagas recomendadas?',
@@ -630,7 +630,7 @@ const quickPrompts = {
     curriculo: {
         question: 'Posso atualizar meu currículo?',
         response:
-            'Claro. Abra "Meu perfil", envie um novo currículo e salve as alterações. O arquivo anterior é substituído com segurança e você mantém o histórico atualizado.',
+            'Claro. Abra a página “Atualize seu cadastro”, envie um novo currículo e salve as alterações. O arquivo anterior é substituído com segurança e você mantém o histórico atualizado.',
     },
 };
 

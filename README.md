@@ -5,6 +5,8 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 ## Estrutura do projeto
 - `index.html`: tela de login exibida ao acessar o localhost, com aba dedicada para novos cadastros.
 - `home.html`: landing page completa apresentada após a autenticação.
+- `cadastro.html`: página dedicada para inscrição no banco de talentos após o login.
+- `perfil.html`: página exclusiva para revisar e atualizar um cadastro existente.
 - `assets/css/style.css`: estilos globais e componentes reutilizáveis.
 - `assets/js/main.js`: comportamentos interativos da landing page autenticada.
 - `assets/js/login.js`: fluxo de autenticação, preenchimento automático e redirecionamento para a home.
@@ -17,8 +19,8 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - **Cadastro direto no login** para quem ainda não possui acesso, incluindo upload de currículo e consentimento para alertas antes de entrar na plataforma.
 - **Landing page autenticada** (`home.html`) com seções completas de serviços, vagas, processos, blog e depoimentos para quem já fez login.
 - **Botão oficial de WhatsApp (11 3539-1330)** fixo no cabeçalho das duas páginas para facilitar o contato com a equipe de atendimento.
-- **Formulário “Cadastre seu currículo”** com upload de arquivos (PDF/DOC) e preferência por alertas por e-mail, alimentando diretamente o banco de dados SQLite.
-- **Área “Meu perfil”** para revisar informações salvas, ajustar alertas, enviar um novo currículo e trocar a senha com regras mínimas de segurança.
+- **Página “Cadastre seu currículo”** (`cadastro.html`) com upload de arquivos (PDF/DOC), definição de senha e preferência por alertas por e-mail, alimentando diretamente o banco de dados SQLite.
+- **Página “Atualize seu cadastro”** (`perfil.html`) para revisar informações salvas, ajustar alertas, enviar um novo currículo e trocar a senha com regras mínimas de segurança.
 - **Destaque automático de vagas** relacionadas à área do candidato autenticado, facilitando o início das candidaturas.
 - **Mensagens de feedback acessíveis** em todos os formulários para orientar o usuário em casos de erro ou sucesso.
 - **Assistente virtual** com chat fixo no canto inferior direito oferecendo respostas rápidas sobre cadastro, vagas e canais de atendimento.
@@ -56,10 +58,10 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - O endpoint `POST /api/login` valida credenciais (`email` + `senha`) e devolve os dados do candidato quando o login é bem-sucedido.
 
 ## Como usar o login e as recomendações
-1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou a seção "Cadastre seu currículo" após o login) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.
+1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou, após autenticar-se, abra a página "Cadastre seu currículo" pelo menu principal) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.
 2. **Autenticação obrigatória:** sempre que acessar o localhost, informe o mesmo e-mail e senha em `index.html` para seguir para a landing page autenticada.
 3. **Vagas em destaque:** após o login, a landing page destaca automaticamente os cards de vagas com a mesma área cadastrada, facilitando o acesso rápido às oportunidades relevantes.
-4. **Atualizações de dados contínuas:** use a área **Meu perfil** para alterar informações, ativar/desativar alertas e enviar um novo currículo quando desejar. As alterações são persistidas no banco e refletem nas próximas sessões.
+4. **Atualizações de dados contínuas:** use a página **Atualize seu cadastro** para alterar informações, ativar/desativar alertas e enviar um novo currículo quando desejar. As alterações são persistidas no banco e refletem nas próximas sessões.
 
 ## Como executar os testes
 Certifique-se de possuir o Python 3 instalado e execute:
@@ -68,4 +70,4 @@ Certifique-se de possuir o Python 3 instalado e execute:
 python -m unittest discover tests
 ```
 
-Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (cadastro, perfil, vagas, contato), se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`), se o cabeçalho mantém o botão oficial de WhatsApp e se todos os formulários preservam os campos obrigatórios e restrições de arquivo. A suíte também garante que a tela de login ofereça as abas de acesso e cadastro, valida a presença do assistente virtual na home e cobre a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.
+Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (vagas, processo, contato, assistente virtual), se o menu aponta corretamente para as páginas dedicadas `cadastro.html` e `perfil.html`, se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`) e se os formulários obrigatórios nas páginas de cadastro e atualização preservam campos e validações. A suíte também garante que a tela de login ofereça as abas de acesso e cadastro, valida o botão oficial de WhatsApp no cabeçalho e cobre a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.

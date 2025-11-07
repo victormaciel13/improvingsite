@@ -5,12 +5,16 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 HOME_PATH = BASE_DIR / "home.html"
 LOGIN_PATH = BASE_DIR / "index.html"
+CADASTRO_PATH = BASE_DIR / "cadastro.html"
+PERFIL_PATH = BASE_DIR / "perfil.html"
 CSS_PATH = BASE_DIR / "assets" / "css" / "style.css"
 MAIN_JS_PATH = BASE_DIR / "assets" / "js" / "main.js"
 LOGIN_JS_PATH = BASE_DIR / "assets" / "js" / "login.js"
 
 HOME_CONTENT = HOME_PATH.read_text(encoding="utf-8")
 LOGIN_CONTENT = LOGIN_PATH.read_text(encoding="utf-8")
+CADASTRO_CONTENT = CADASTRO_PATH.read_text(encoding="utf-8")
+PERFIL_CONTENT = PERFIL_PATH.read_text(encoding="utf-8")
 
 
 class TestSiteStructure(unittest.TestCase):
@@ -19,6 +23,8 @@ class TestSiteStructure(unittest.TestCase):
         tracked_files = [
             HOME_PATH,
             LOGIN_PATH,
+            CADASTRO_PATH,
+            PERFIL_PATH,
             CSS_PATH,
             MAIN_JS_PATH,
             LOGIN_JS_PATH,
@@ -45,8 +51,7 @@ class TestSiteStructure(unittest.TestCase):
             "sobre": r'id=\"sobre\"',
             "servicos": r'id=\"servicos\"',
             "vagas": r'id=\"vagas\"',
-            "cadastro": r'id=\"cadastro\"',
-            "perfil": r'id=\"perfil\"',
+            "registro": r'class=\"registration-gateway\"',
             "processo": r'id=\"processo\"',
             "contato": r'id=\"contato\"',
         }
@@ -58,11 +63,16 @@ class TestSiteStructure(unittest.TestCase):
                 )
 
     def test_navigation_links_include_cadastro(self):
-        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HOME_CONTENT)
-        cadastro_links = [href for href, text in links if href == "#cadastro" and "Cadastre" in text]
+        links = re.findall(r'<a href=\"([^\"]+)\"[^>]*>([^<]+)</a>', HOME_CONTENT)
+        cadastro_links = [href for href, text in links if href == "cadastro.html" and "Cadastre" in text]
+        perfil_links = [href for href, text in links if href == "perfil.html" and "Atualize" in text]
         self.assertTrue(
             cadastro_links,
-            "A página inicial precisa manter um link visível para a seção de cadastro de talentos.",
+            "A navegação deve direcionar usuários para a nova página de cadastro de currículos.",
+        )
+        self.assertTrue(
+            perfil_links,
+            "A navegação deve oferecer acesso direto à página de atualização de cadastro.",
         )
 
     def test_home_header_has_whatsapp_cta(self):
@@ -73,9 +83,17 @@ class TestSiteStructure(unittest.TestCase):
         )
 
     def test_home_navigation_targets_existing_sections(self):
-        nav_targets = re.findall(r'<a href="(#[a-z-]+)"', HOME_CONTENT)
-        available_ids = set(re.findall(r'id=\"([a-z-]+)\"', HOME_CONTENT))
-        missing_targets = [target for target in nav_targets if target.startswith('#') and target[1:] not in available_ids]
+        nav_targets = re.findall(r'<a href=\"([^\"]*#[a-zA-Z0-9_-]+)\"', HOME_CONTENT)
+        available_ids = set(re.findall(r'id=\"([a-zA-Z0-9_-]+)\"', HOME_CONTENT))
+        missing_targets = []
+        for target in nav_targets:
+            anchor = target.split('#', 1)[1]
+            if not anchor:
+                continue
+            if target.startswith('http'):
+                continue
+            if anchor not in available_ids:
+                missing_targets.append(anchor)
         self.assertFalse(
             missing_targets,
             f"Os links de navegação devem apontar para ids existentes. Alvos faltantes: {missing_targets}",
@@ -90,10 +108,10 @@ class TestSiteStructure(unittest.TestCase):
         )
 
     def test_job_cards_link_to_cadastro(self):
-        apply_links = re.findall(r'<a class=\"btn btn--ghost\" href=\"(#[a-z-]+)\"[^>]*data-action=\"candidatar\"', HOME_CONTENT)
+        apply_links = re.findall(r'<a class=\"btn btn--ghost\" href=\"([^\"]+)\"[^>]*data-action=\"candidatar\"', HOME_CONTENT)
         self.assertTrue(
-            all(link == '#cadastro' for link in apply_links),
-            "Todos os botões de candidatura devem direcionar usuários para a área de cadastro na própria página.",
+            all(link == 'cadastro.html' for link in apply_links),
+            "Todos os botões de candidatura devem direcionar usuários para a nova página de cadastro.",
         )
 
     def test_job_cards_have_feedback_placeholder(self):
@@ -157,16 +175,16 @@ class TestSiteStructure(unittest.TestCase):
         for field, pattern in required_fields.items():
             with self.subTest(field=field):
                 self.assertIsNotNone(
-                    re.search(pattern, HOME_CONTENT),
+                    re.search(pattern, CADASTRO_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de cadastro de talentos.",
                 )
 
-        senha_input = re.search(r'<input[^>]*id=\"talent-senha\"[^>]*>', HOME_CONTENT)
+        senha_input = re.search(r'<input[^>]*id=\"talent-senha\"[^>]*>', CADASTRO_CONTENT)
         self.assertIsNotNone(senha_input)
         if senha_input:
             self.assertIn('type="password"', senha_input.group(0))
 
-        file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', HOME_CONTENT)
+        file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', CADASTRO_CONTENT)
         self.assertIsNotNone(file_accept_match, "O upload de currículo deve restringir os formatos permitidos.")
         if file_accept_match:
             accepted_formats = file_accept_match.group(1)
@@ -179,8 +197,8 @@ class TestSiteStructure(unittest.TestCase):
 
     def test_profile_section_has_editing_capabilities(self):
         self.assertIsNotNone(
-            re.search(r'id=\"perfil\"', HOME_CONTENT),
-            msg="A área de perfil deve estar presente para permitir atualizações de cadastro.",
+            re.search(r'id=\"perfil\"', PERFIL_CONTENT),
+            msg="A página de atualização de cadastro deve expor a área de perfil para edições.",
         )
 
         profile_fields = {
@@ -194,26 +212,29 @@ class TestSiteStructure(unittest.TestCase):
         for field, pattern in profile_fields.items():
             with self.subTest(field=field):
                 self.assertIsNotNone(
-                    re.search(pattern, HOME_CONTENT),
+                    re.search(pattern, PERFIL_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de edição de perfil.",
                 )
 
-        profile_password_input = re.search(r'<input[^>]*id=\"profile-senha\"[^>]*>', HOME_CONTENT)
-        self.assertIsNotNone(profile_password_input)
-        if profile_password_input:
-            self.assertIn('type="password"', profile_password_input.group(0))
+        password_input = re.search(r'<input[^>]*id=\"profile-senha\"[^>]*>', PERFIL_CONTENT)
+        self.assertIsNotNone(password_input)
+        if password_input:
+            self.assertIn('type="password"', password_input.group(0))
 
-        profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', HOME_CONTENT)
-        self.assertIsNotNone(
-            profile_checkbox,
-            "O formulário de perfil deve permitir ativar ou desativar alertas por e-mail.",
-        )
+        profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', PERFIL_CONTENT)
+        self.assertIsNotNone(profile_checkbox)
         if profile_checkbox:
-            self.assertIn(
-                'type="checkbox"',
-                profile_checkbox.group(0),
-                "O campo de alertas deve ser um checkbox para controlar as notificações.",
-            )
+            self.assertIn('type="checkbox"', profile_checkbox.group(0))
+
+    def test_secondary_pages_highlight_active_navigation(self):
+        self.assertIsNotNone(
+            re.search(r'cadastro\.html\"[^>]*aria-current=\"page\"', CADASTRO_CONTENT),
+            msg="A página de cadastro deve sinalizar o item ativo no menu.",
+        )
+        self.assertIsNotNone(
+            re.search(r'perfil\.html\"[^>]*aria-current=\"page\"', PERFIL_CONTENT),
+            msg="A página de atualização deve manter o estado ativo no menu.",
+        )
 
     def test_login_page_has_auth_tabs_and_forms(self):
         self.assertIsNotNone(
