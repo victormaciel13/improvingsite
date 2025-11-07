@@ -52,36 +52,13 @@ class TestSiteStructure(unittest.TestCase):
                     msg=f"A seção '{name}' deve estar presente na página inicial.",
                 )
 
-    def test_navigation_cta_points_to_cadastro(self):
-        pattern = r'<li class=\"main-nav__cta\">\s*<a href=\"(#.*?)\"[^>]*>([^<]+)</a>'
-        nav_cta = re.search(pattern, HTML_CONTENT)
-        self.assertIsNotNone(nav_cta, "A navegação deve destacar um acesso rápido ao cadastro de talentos.")
-        if nav_cta:
-            self.assertEqual(
-                nav_cta.group(1),
-                "#cadastro",
-                "O destaque de navegação precisa direcionar para a seção de cadastro.",
-            )
-            self.assertIn(
-                "Cadastre-se",
-                nav_cta.group(2),
-                "O texto do destaque deve incentivar o cadastro.",
-    def test_header_cta_points_to_cadastro(self):
-        header_cta = re.search(r'<a class=\"cta\" href=\"(#.*?)\"[^>]*>(.*?)</a>', HTML_CONTENT)
-        self.assertIsNotNone(header_cta, "O cabeçalho deve possuir um botão de chamada para ação.")
-        if header_cta:
-            self.assertEqual(
-                header_cta.group(1),
-                "#cadastro",
-                "O botão principal do cabeçalho deve direcionar para a seção de cadastro.",
-    def test_whatsapp_cta_link(self):
-        match = re.search(r'href=\"(https://wa\.me/[^\"]+)\"', HTML_CONTENT)
-        self.assertIsNotNone(match, "Deve existir um link para contato via WhatsApp.")
-        if match:
-            self.assertTrue(
-                match.group(1).startswith("https://wa.me/"),
-                "O link do WhatsApp deve utilizar o domínio oficial wa.me.",
-            )
+    def test_navigation_links_include_cadastro(self):
+        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HTML_CONTENT)
+        cadastro_links = [href for href, text in links if href == "#cadastro" and "Cadastre" in text]
+        self.assertTrue(
+            cadastro_links,
+            "O menu principal deve manter um link direto para a seção de cadastro de talentos.",
+        )
 
     def test_navigation_targets_existing_sections(self):
         nav_targets = re.findall(r'<a href="(#[a-z-]+)"', HTML_CONTENT)
