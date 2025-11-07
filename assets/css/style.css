@@ -111,6 +111,11 @@ img {
     align-items: center;
     justify-content: center;
     padding: 0.65rem 1.2rem;
+.cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.4rem;
     border-radius: var(--radius-sm);
     background: var(--color-secondary);
     color: #fff;
@@ -123,6 +128,13 @@ img {
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
     background: var(--color-secondary-strong, #e1641a);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta:hover,
+.cta:focus {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
 }
 
 .main-nav ul {
@@ -259,6 +271,12 @@ h1 {
 .btn--ghost:focus {
     border-color: var(--color-primary);
     color: var(--color-primary);
+}
+
+.btn--whatsapp {
+    background: #25d366;
+    color: #fff;
+    gap: 0.5rem;
 }
 
 .hero__metrics {
@@ -1039,6 +1057,8 @@ h1 {
 
     .main-nav__cta > a {
         width: 100%;
+    .cta {
+        margin-left: auto;
     }
 
     .jobs__filters {
