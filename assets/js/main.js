@@ -14,6 +14,9 @@ const favoritoButtons = document.querySelectorAll('[data-action="favorito"]');
 const candidatarButtons = document.querySelectorAll('[data-action="candidatar"]');
 const profileForm = document.getElementById('profile-form');
 const profileFeedback = document.querySelector('.profile__feedback');
+const bodyElement = document.body;
+const loginSection = document.querySelector('.login');
+const heroSection = document.querySelector('.hero');
 const profileFields = {
     nome: document.querySelector('[data-profile-field="nome"]'),
     email: document.querySelector('[data-profile-field="email"]'),
@@ -36,6 +39,7 @@ const API_ENDPOINT = '/api/candidates';
 const LOGIN_ENDPOINT = '/api/login';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
+const AUTH_STATE_KEY = 'idealTalentAuthState';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
 function safeParseJSON(value, fallback) {
@@ -74,6 +78,46 @@ function getStoredLoginEmail() {
 function rememberLoginEmail(email) {
     if (email) {
         localStorage.setItem(LOGIN_STORAGE_KEY, email);
+    }
+}
+
+function setSessionAuthState(isAuthenticated) {
+    try {
+        if (isAuthenticated) {
+            sessionStorage.setItem(AUTH_STATE_KEY, 'authenticated');
+        } else {
+            sessionStorage.removeItem(AUTH_STATE_KEY);
+        }
+    } catch (error) {
+        console.warn('Não foi possível atualizar o estado de autenticação da sessão.', error);
+    }
+}
+
+function isSessionAuthenticated() {
+    try {
+        return sessionStorage.getItem(AUTH_STATE_KEY) === 'authenticated';
+    } catch (error) {
+        console.warn('Não foi possível verificar o estado de autenticação da sessão.', error);
+        return false;
+    }
+}
+
+function activateLoginGate() {
+    if (!loginSection) {
+        return;
+    }
+    loginSection.classList.add('login--gate');
+    bodyElement.classList.add('auth-locked');
+}
+
+function releaseLoginGate({ scrollToContent = true } = {}) {
+    bodyElement.classList.remove('auth-locked');
+    loginSection?.classList.remove('login--gate');
+
+    if (scrollToContent && heroSection && typeof heroSection.scrollIntoView === 'function') {
+        setTimeout(() => {
+            heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
     }
 }
 
@@ -258,6 +302,16 @@ function initializeProfile() {
 
 initializeProfile();
 
+if (isSessionAuthenticated()) {
+    releaseLoginGate({ scrollToContent: false });
+} else {
+    activateLoginGate();
+    const firstLoginField = loginForm?.querySelector('input');
+    if (firstLoginField && typeof firstLoginField.focus === 'function') {
+        setTimeout(() => firstLoginField.focus(), 150);
+    }
+}
+
 async function sendCandidateData(formData) {
     if (formData.get('alertas') == null) {
         formData.set('alertas', 'nao');
@@ -424,11 +478,14 @@ loginForm?.addEventListener('submit', async (event) => {
         const candidate = await authenticateCandidate(email, senha);
         const profileData = syncProfileFromCandidate(candidate);
         rememberLoginEmail(email);
+        setSessionAuthState(true);
+        releaseLoginGate({ scrollToContent: true });
         loginFeedback.textContent = profileData?.area
             ? 'Login realizado! Veja abaixo as vagas recomendadas para você.'
             : 'Login realizado! Atualize seu cadastro para receber recomendações personalizadas.';
         loginFeedback.style.color = '#16a34a';
     } catch (error) {
+        setSessionAuthState(false);
         loginFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível fazer login agora. Tente novamente em instantes.';
         loginFeedback.style.color = '#dc2626';
     }

@@ -58,15 +58,24 @@ class TestSiteStructure(unittest.TestCase):
         cadastro_links = [href for href, text in links if href == "#cadastro" and "Cadastre" in text]
         self.assertTrue(
             cadastro_links,
-            "O menu principal deve manter um link direto para a seção de cadastro de talentos.",
+            "A página precisa manter um link visível para a seção de cadastro de talentos.",
         )
 
-    def test_navigation_links_include_login(self):
-        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HTML_CONTENT)
-        login_links = [href for href, text in links if href == "#login" and "Login" in text]
-        self.assertTrue(
-            login_links,
-            "O menu principal deve oferecer um acesso direto à área de login dos candidatos.",
+    def test_header_has_whatsapp_cta(self):
+        whatsapp_link = re.search(r'href=\"https://wa\.me/551135391330\"', HTML_CONTENT)
+        self.assertIsNotNone(
+            whatsapp_link,
+            "O cabeçalho deve oferecer um botão direto para o canal de WhatsApp informado.",
+        )
+
+    def test_initial_state_protected_by_login_gate(self):
+        body_has_lock = re.search(r'<body[^>]*class=\"[^\"]*auth-locked', HTML_CONTENT)
+        self.assertIsNotNone(body_has_lock, "O corpo da página deve iniciar com a classe 'auth-locked'.")
+
+        login_gate = re.search(r'class=\"login[^\"]*login--gate', HTML_CONTENT)
+        self.assertIsNotNone(
+            login_gate,
+            "A seção de login deve carregar com a classe 'login--gate' para bloquear o restante do conteúdo.",
         )
 
     def test_navigation_targets_existing_sections(self):

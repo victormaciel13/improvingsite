@@ -11,11 +11,19 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - `storage.py`: camada de persistência responsável pelo banco de dados SQLite que armazena os cadastros.
 
 ## Recursos para candidatos
+- Tela inicial de **login obrigatório**, garantindo que apenas usuários autenticados naveguem pelo conteúdo completo do site.
+- Botão dedicado de **WhatsApp (11 3539-1330)** no cabeçalho para contato direto com a equipe de atendimento.
 - Seção **Cadastre seu currículo** com formulário completo para envio de dados e currículo (PDF/DOC) diretamente para o banco de talentos.
 - Área **Login** para que candidatos cadastrados acessem o perfil com e-mail e senha e visualizem recomendações instantâneas.
 - Área **Meu perfil** para visualizar rapidamente os dados salvos, atualizar contato, alterar preferências de alertas e substituir o currículo sem perder o histórico.
 - Opção para optar pelo recebimento de alertas de novas vagas por e-mail com armazenamento real dos cadastros no banco de dados.
 - Feedback imediato após o envio com orientações claras em caso de campos faltantes e mensagens de sucesso acessíveis.
+
+## Fluxo inicial de acesso
+1. **Barreira de login:** ao carregar a página, o layout aplica uma camada que bloqueia o cabeçalho e o restante do conteúdo até que o usuário preencha o formulário de login.
+2. **Sessão autenticada:** quando as credenciais são validadas (`POST /api/login`), o site remove o bloqueio automaticamente, registra o estado da sessão no `sessionStorage` e leva o visitante ao hero para conhecer todos os recursos.
+3. **Retorno na mesma sessão:** enquanto o navegador permanecer aberto, o estado autenticado é preservado e o site será exibido diretamente sem a barreira de login.
+4. **Nova sessão ou aba:** ao reabrir o site em uma nova aba ou sessão, a camada de login volta a ser exibida até que o usuário autentique novamente.
 
 ## Como visualizar o site localmente
 1. Garanta que você tenha o Python 3 instalado.
@@ -44,7 +52,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 
 ## Como usar o login e as recomendações
 1. **Cadastro inicial:** preencha o formulário "Cadastre seu currículo" informando nome, e-mail, área de interesse, currículo e defina uma senha com pelo menos 6 caracteres.
-2. **Acesso ao perfil:** utilize a seção de **Login** para entrar com o mesmo e-mail e senha; após a autenticação as informações do perfil são carregadas automaticamente.
+2. **Acesso obrigatório:** ao visitar o site, autentique-se na tela inicial de login para desbloquear o restante do conteúdo. O e-mail e a senha são os mesmos informados no cadastro.
 3. **Recomendações personalizadas:** ao entrar, as vagas que combinam com a área de interesse cadastrada ganham destaque visual e são listadas na própria seção de login.
 4. **Atualizações de dados:** na área **Meu perfil** é possível alterar dados, preferências e, se desejar, definir uma nova senha (opcional) sempre respeitando o mínimo de 6 caracteres.
 
@@ -55,4 +63,4 @@ Certifique-se de possuir o Python 3 instalado e execute:
 python -m unittest discover tests
 ```
 
-Os testes verificam se as seções principais estão presentes (incluindo a área de perfil), se os arquivos de estilos e scripts existem, se o botão principal do cabeçalho direciona para a área de cadastro e se os formulários de cadastro e de edição mantêm os campos essenciais e restrições de arquivo. A suíte também cobre a camada de persistência, garantindo que os cadastros sejam armazenados corretamente no banco de dados SQLite e que atualizações mantenham o histórico do currículo.
+Os testes verificam se as seções principais estão presentes (incluindo a área de perfil), se os arquivos de estilos e scripts existem, se o cabeçalho possui o botão oficial de WhatsApp, se a página inicia bloqueada pela camada de login e se os formulários de cadastro e de edição mantêm os campos essenciais e restrições de arquivo. A suíte também cobre a camada de persistência, garantindo que os cadastros sejam armazenados corretamente no banco de dados SQLite e que atualizações mantenham o histórico do currículo.

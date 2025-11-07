@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
+<body class="auth-locked">
     <header class="site-header" id="topo">
         <div class="container header__inner">
             <a class="brand" href="#topo" aria-label="Ideal Empregos">
@@ -28,17 +28,51 @@
                     <li><a href="#sobre">Sobre</a></li>
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
-                    <li><a href="#login">Login</a></li>
-                    <li><a href="#cadastro" aria-label="Ir para a seção de cadastro de talentos">Cadastre-se</a></li>
                     <li><a href="#perfil">Meu perfil</a></li>
                     <li><a href="#processo">Como funciona</a></li>
                     <li><a href="#contato">Contato</a></li>
+                    <li class="main-nav__cta"><a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
     <main>
+        <section class="login login--gate" id="login" aria-labelledby="login-title">
+            <div class="container login__grid">
+                <div class="login__intro">
+                    <p class="tag">Acesse para desbloquear o conteúdo</p>
+                    <h2 id="login-title">Faça login para descobrir tudo que a Ideal Empregos oferece</h2>
+                    <p>Ao entrar, você verá nossas vagas em destaque, serviços especializados, depoimentos e poderá atualizar todo o seu cadastro em poucos cliques.</p>
+                    <ul class="login__benefits">
+                        <li>Acompanhe candidaturas e alertas personalizados</li>
+                        <li>Veja recomendações de vagas sob medida para o seu perfil</li>
+                        <li>Atualize seus dados e currículo quando quiser</li>
+                    </ul>
+                </div>
+                <div class="login__panel">
+                    <form class="login__form" id="login-form" novalidate>
+                        <div class="form__field">
+                            <label for="login-email">E-mail cadastrado</label>
+                            <input type="email" id="login-email" name="email" placeholder="seuemail@exemplo.com" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="login-senha">Senha</label>
+                            <input type="password" id="login-senha" name="senha" placeholder="Sua senha" minlength="6" required>
+                            <p class="form__hint">É a mesma senha criada no cadastro de currículo.</p>
+                        </div>
+                        <button class="btn btn--primary" type="submit">Entrar</button>
+                        <p class="login__feedback" role="status" aria-live="polite"></p>
+                    </form>
+                    <div class="login__recommendations" hidden>
+                        <h3>Vagas recomendadas para você</h3>
+                        <p>Confira oportunidades alinhadas à sua área de atuação. Atualize o perfil para refinar as sugestões.</p>
+                        <ul class="login__recommendations-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="hero" aria-labelledby="hero-title">
             <div class="container hero__content">
                 <div>
@@ -68,41 +102,6 @@
                     <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80" alt="Equipe de recrutamento colaborando em um escritório moderno">
                     <figcaption>Recrutamento humanizado com tecnologia de ponta.</figcaption>
                 </figure>
-            </div>
-        </section>
-
-        <section class="login" id="login" aria-labelledby="login-title">
-            <div class="container login__grid">
-                <div class="login__intro">
-                    <p class="tag">Acesse sua conta</p>
-                    <h2 id="login-title">Entre para acompanhar candidaturas e receber recomendações</h2>
-                    <p>Utilize o e-mail cadastrado para revisar seus dados, atualizar documentos e descobrir vagas sugeridas com base nas suas preferências.</p>
-                    <ul class="login__benefits">
-                        <li>Histórico de candidaturas e alertas personalizados</li>
-                        <li>Recomendações instantâneas alinhadas à sua área</li>
-                        <li>Atualização rápida de informações e currículo</li>
-                    </ul>
-                </div>
-                <div class="login__panel">
-                    <form class="login__form" id="login-form" novalidate>
-                        <div class="form__field">
-                            <label for="login-email">E-mail cadastrado</label>
-                            <input type="email" id="login-email" name="email" placeholder="seuemail@exemplo.com" required>
-                        </div>
-                        <div class="form__field">
-                            <label for="login-senha">Senha</label>
-                            <input type="password" id="login-senha" name="senha" placeholder="Sua senha" minlength="6" required>
-                            <p class="form__hint">É a mesma senha criada no cadastro de currículo.</p>
-                        </div>
-                        <button class="btn btn--primary" type="submit">Entrar</button>
-                        <p class="login__feedback" role="status" aria-live="polite"></p>
-                    </form>
-                    <div class="login__recommendations" hidden>
-                        <h3>Vagas recomendadas para você</h3>
-                        <p>Confira oportunidades alinhadas à sua área de atuação. Atualize o perfil para refinar as sugestões.</p>
-                        <ul class="login__recommendations-list"></ul>
-                    </div>
-                </div>
             </div>
         </section>
 

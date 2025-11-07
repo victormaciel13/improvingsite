@@ -119,6 +119,16 @@ img {
     color: var(--color-primary);
 }
 
+.main-nav__cta {
+    margin-left: auto;
+}
+
+.main-nav__cta .btn {
+    padding: 0.75rem 1.3rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
 .main-nav__toggle {
     display: none;
     flex-direction: column;
@@ -236,6 +246,18 @@ h1 {
 .btn--ghost:focus {
     border-color: var(--color-primary);
     color: var(--color-primary);
+}
+
+.btn--cta {
+    background: #f97316;
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn--cta:hover,
+.btn--cta:focus {
+    background: #ea580c;
+    transform: translateY(-2px);
 }
 
 .hero__metrics {
@@ -592,6 +614,48 @@ h1 {
 .insight-card__link {
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.auth-locked {
+    overflow: hidden;
+}
+
+.auth-locked .site-header,
+.auth-locked .back-to-top {
+    display: none;
+}
+
+.auth-locked main > :not(.login) {
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+.auth-locked .login.login--gate {
+    position: fixed;
+    inset: 0;
+    background: var(--color-surface);
+    z-index: 20;
+    overflow-y: auto;
+    padding: 6rem 0;
+    box-shadow: none;
+}
+
+.auth-locked .login.login--gate .login__panel {
+    box-shadow: var(--shadow-md);
+}
+
+.auth-locked .login.login--gate .container {
+    position: relative;
+    z-index: 1;
+}
+
+.auth-locked .login.login--gate::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(15, 118, 110, 0.18));
+    z-index: 0;
 }
 
 .login {
@@ -1110,6 +1174,14 @@ h1 {
         opacity: 1;
         visibility: visible;
         transform: scale(1);
+    }
+
+    .main-nav__cta {
+        margin-left: 0;
+    }
+
+    .main-nav__cta .btn {
+        width: 100%;
     }
 
     .main-nav__toggle {
