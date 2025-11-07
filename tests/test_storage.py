@@ -23,6 +23,7 @@ class StorageTestCase(unittest.TestCase):
             'telefone': '(11) 99999-9999',
             'area': 'tecnologia',
             'deseja_alertas': True,
+            'senha': 'segura123',
         }
 
         candidate = storage.save_candidate(
@@ -47,6 +48,8 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual(stored['email'], 'maria@example.com')
         self.assertEqual(stored['area'], 'tecnologia')
         self.assertTrue(stored['desejaAlertas'])
+        authenticated = storage.authenticate_candidate('maria@example.com', 'segura123')
+        self.assertEqual(authenticated['email'], 'maria@example.com')
 
     def test_update_candidate_without_new_file_keeps_existing_resume(self):
         payload = {
@@ -55,6 +58,7 @@ class StorageTestCase(unittest.TestCase):
             'telefone': '(11) 98888-8888',
             'area': 'marketing',
             'deseja_alertas': True,
+            'senha': 'senhaInicial1',
         }
 
         first = storage.save_candidate(
@@ -69,6 +73,7 @@ class StorageTestCase(unittest.TestCase):
             'telefone': '(11) 97777-7777',
             'area': 'financeiro',
             'deseja_alertas': False,
+            'senha': 'NovaSenha2',
         }
 
         second = storage.save_candidate(updated_payload)
@@ -77,10 +82,29 @@ class StorageTestCase(unittest.TestCase):
         stored = storage.get_candidate_by_email('joao@example.com')
         self.assertEqual(stored['area'], 'financeiro')
         self.assertFalse(stored['desejaAlertas'])
+        updated_auth = storage.authenticate_candidate('joao@example.com', 'NovaSenha2')
+        self.assertEqual(updated_auth['email'], 'joao@example.com')
+        with self.assertRaises(storage.ValidationError):
+            storage.authenticate_candidate('joao@example.com', 'senhaInicial1')
 
         data_dir = Path(self.tmpdir.name)
         uploaded_file = data_dir / second['curriculo']
         self.assertTrue(uploaded_file.exists(), 'O currículo original deve continuar disponível após a atualização.')
+
+    def test_authenticate_candidate_with_invalid_credentials(self):
+        payload = {
+            'nome': 'Ana Souza',
+            'email': 'ana@example.com',
+            'telefone': '(11) 95555-5555',
+            'area': 'tecnologia',
+            'deseja_alertas': True,
+            'senha': 'SenhaForte3',
+        }
+
+        storage.save_candidate(payload)
+
+        with self.assertRaises(storage.ValidationError):
+            storage.authenticate_candidate('ana@example.com', 'senhaIncorreta')
 
 
 if __name__ == '__main__':

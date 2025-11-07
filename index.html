@@ -28,6 +28,7 @@
                     <li><a href="#sobre">Sobre</a></li>
                     <li><a href="#servicos">Serviços</a></li>
                     <li><a href="#vagas">Vagas</a></li>
+                    <li><a href="#login">Login</a></li>
                     <li><a href="#cadastro" aria-label="Ir para a seção de cadastro de talentos">Cadastre-se</a></li>
                     <li><a href="#perfil">Meu perfil</a></li>
                     <li><a href="#processo">Como funciona</a></li>
@@ -67,6 +68,41 @@
                     <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80" alt="Equipe de recrutamento colaborando em um escritório moderno">
                     <figcaption>Recrutamento humanizado com tecnologia de ponta.</figcaption>
                 </figure>
+            </div>
+        </section>
+
+        <section class="login" id="login" aria-labelledby="login-title">
+            <div class="container login__grid">
+                <div class="login__intro">
+                    <p class="tag">Acesse sua conta</p>
+                    <h2 id="login-title">Entre para acompanhar candidaturas e receber recomendações</h2>
+                    <p>Utilize o e-mail cadastrado para revisar seus dados, atualizar documentos e descobrir vagas sugeridas com base nas suas preferências.</p>
+                    <ul class="login__benefits">
+                        <li>Histórico de candidaturas e alertas personalizados</li>
+                        <li>Recomendações instantâneas alinhadas à sua área</li>
+                        <li>Atualização rápida de informações e currículo</li>
+                    </ul>
+                </div>
+                <div class="login__panel">
+                    <form class="login__form" id="login-form" novalidate>
+                        <div class="form__field">
+                            <label for="login-email">E-mail cadastrado</label>
+                            <input type="email" id="login-email" name="email" placeholder="seuemail@exemplo.com" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="login-senha">Senha</label>
+                            <input type="password" id="login-senha" name="senha" placeholder="Sua senha" minlength="6" required>
+                            <p class="form__hint">É a mesma senha criada no cadastro de currículo.</p>
+                        </div>
+                        <button class="btn btn--primary" type="submit">Entrar</button>
+                        <p class="login__feedback" role="status" aria-live="polite"></p>
+                    </form>
+                    <div class="login__recommendations" hidden>
+                        <h3>Vagas recomendadas para você</h3>
+                        <p>Confira oportunidades alinhadas à sua área de atuação. Atualize o perfil para refinar as sugestões.</p>
+                        <ul class="login__recommendations-list"></ul>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -174,7 +210,7 @@
                 </div>
             </div>
             <div class="container jobs__grid" role="list">
-                <article class="job-card" data-area="tecnologia" data-modalidade="remoto" role="listitem">
+                <article class="job-card" id="vaga-tecnologia-fullstack" data-area="tecnologia" data-modalidade="remoto" role="listitem">
                     <header>
                         <span class="job-card__tag">Remoto</span>
                         <h3>Desenvolvedor(a) Full Stack</h3>
@@ -186,11 +222,11 @@
                         <li>Inglês avançado</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#contato">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Desenvolvedor(a) Full Stack" data-job-target="#vaga-tecnologia-fullstack">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                 </article>
-                <article class="job-card" data-area="saude" data-modalidade="presencial" role="listitem">
+                <article class="job-card" id="vaga-saude-coordenacao" data-area="saude" data-modalidade="presencial" role="listitem">
                     <header>
                         <span class="job-card__tag">Presencial</span>
                         <h3>Coordenador(a) de Enfermagem</h3>
@@ -202,11 +238,11 @@
                         <li>Especialização em gestão hospitalar</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#contato">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Coordenador(a) de Enfermagem" data-job-target="#vaga-saude-coordenacao">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                 </article>
-                <article class="job-card" data-area="financeiro" data-modalidade="hibrido" role="listitem">
+                <article class="job-card" id="vaga-financeiro-analista" data-area="financeiro" data-modalidade="hibrido" role="listitem">
                     <header>
                         <span class="job-card__tag">Híbrido</span>
                         <h3>Analista Financeiro Sênior</h3>
@@ -218,11 +254,11 @@
                         <li>Excel avançado e Power BI</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#contato">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Analista Financeiro Sênior" data-job-target="#vaga-financeiro-analista">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                 </article>
-                <article class="job-card" data-area="marketing" data-modalidade="remoto" role="listitem">
+                <article class="job-card" id="vaga-marketing-growth" data-area="marketing" data-modalidade="remoto" role="listitem">
                     <header>
                         <span class="job-card__tag">Remoto</span>
                         <h3>Especialista em Growth Marketing</h3>
@@ -234,7 +270,7 @@
                         <li>Experiência com marketing de produto</li>
                     </ul>
                     <div class="job-card__actions">
-                        <a class="btn btn--ghost" href="#contato">Quero me candidatar</a>
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Especialista em Growth Marketing" data-job-target="#vaga-marketing-growth">Quero me candidatar</a>
                         <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
                     </div>
                 </article>
@@ -263,6 +299,11 @@
                         <div class="form__field">
                             <label for="talent-email">E-mail</label>
                             <input type="email" id="talent-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-senha">Crie uma senha</label>
+                            <input type="password" id="talent-senha" name="senha" placeholder="Mínimo de 6 caracteres" minlength="6" required>
+                            <p class="form__hint">Use esta senha para fazer login e acompanhar suas recomendações.</p>
                         </div>
                         <div class="form__field">
                             <label for="talent-telefone">Telefone</label>
@@ -352,6 +393,11 @@
                                 <option value="industrial">Industrial</option>
                                 <option value="administrativo">Administrativo</option>
                             </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-senha">Atualizar senha (opcional)</label>
+                            <input type="password" id="profile-senha" name="senha" placeholder="Digite uma nova senha" minlength="6">
+                            <p class="form__hint">Preencha apenas se desejar alterar sua senha atual.</p>
                         </div>
                         <div class="form__field">
                             <label for="profile-curriculo">Atualizar currículo (opcional)</label>

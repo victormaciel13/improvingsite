@@ -40,6 +40,7 @@ class TestSiteStructure(unittest.TestCase):
             "sobre": r'id=\"sobre\"',
             "servicos": r'id=\"servicos\"',
             "vagas": r'id=\"vagas\"',
+            "login": r'id=\"login\"',
             "cadastro": r'id=\"cadastro\"',
             "perfil": r'id=\"perfil\"',
             "processo": r'id=\"processo\"',
@@ -58,6 +59,14 @@ class TestSiteStructure(unittest.TestCase):
         self.assertTrue(
             cadastro_links,
             "O menu principal deve manter um link direto para a seção de cadastro de talentos.",
+        )
+
+    def test_navigation_links_include_login(self):
+        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HTML_CONTENT)
+        login_links = [href for href, text in links if href == "#login" and "Login" in text]
+        self.assertTrue(
+            login_links,
+            "O menu principal deve oferecer um acesso direto à área de login dos candidatos.",
         )
 
     def test_navigation_targets_existing_sections(self):
@@ -95,6 +104,7 @@ class TestSiteStructure(unittest.TestCase):
         required_fields = {
             "nome": r'id=\"talent-nome\"',
             "email": r'id=\"talent-email\"',
+            "senha": r'id=\"talent-senha\"',
             "area": r'id=\"talent-area\"',
             "curriculo": r'id=\"talent-curriculo\"',
         }
@@ -104,6 +114,11 @@ class TestSiteStructure(unittest.TestCase):
                     re.search(pattern, HTML_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de cadastro de talentos.",
                 )
+
+        senha_input = re.search(r'<input[^>]*id=\"talent-senha\"[^>]*>', HTML_CONTENT)
+        self.assertIsNotNone(senha_input)
+        if senha_input:
+            self.assertIn('type="password"', senha_input.group(0))
 
         file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', HTML_CONTENT)
         self.assertIsNotNone(file_accept_match, "O upload de currículo deve restringir os formatos permitidos.")
@@ -127,6 +142,7 @@ class TestSiteStructure(unittest.TestCase):
             "email": r'id=\"profile-email\"',
             "area": r'id=\"profile-area\"',
             "curriculo": r'id=\"profile-curriculo\"',
+            "senha": r'id=\"profile-senha\"',
         }
 
         for field, pattern in profile_fields.items():
@@ -135,6 +151,11 @@ class TestSiteStructure(unittest.TestCase):
                     re.search(pattern, HTML_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de edição de perfil.",
                 )
+
+        profile_password_input = re.search(r'<input[^>]*id=\"profile-senha\"[^>]*>', HTML_CONTENT)
+        self.assertIsNotNone(profile_password_input)
+        if profile_password_input:
+            self.assertIn('type="password"', profile_password_input.group(0))
 
         profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', HTML_CONTENT)
         self.assertIsNotNone(
@@ -147,6 +168,29 @@ class TestSiteStructure(unittest.TestCase):
                 profile_checkbox.group(0),
                 "O campo de alertas deve ser um checkbox para controlar as notificações.",
             )
+
+    def test_login_section_has_form_and_recommendations(self):
+        self.assertIsNotNone(
+            re.search(r'id=\"login-form\"', HTML_CONTENT),
+            msg="A página deve oferecer um formulário de login dedicado para candidatos cadastrados.",
+        )
+
+        self.assertIsNotNone(
+            re.search(r'class=\"login__recommendations\"', HTML_CONTENT),
+            msg="A seção de login deve expor um bloco para recomendações personalizadas.",
+        )
+
+        login_password_field = re.search(r'<input[^>]*id=\"login-senha\"[^>]*>', HTML_CONTENT)
+        self.assertIsNotNone(login_password_field)
+        if login_password_field:
+            self.assertIn('type="password"', login_password_field.group(0))
+
+    def test_job_cards_redirect_candidates_to_login(self):
+        apply_links = re.findall(r'<a class=\"btn btn--ghost\" href=\"(#[a-z-]+)\"[^>]*data-action=\"candidatar\"', HTML_CONTENT)
+        self.assertTrue(
+            all(link == '#login' for link in apply_links),
+            "Todos os botões de candidatura devem direcionar usuários para a área de login.",
+        )
 
 
 if __name__ == "__main__":

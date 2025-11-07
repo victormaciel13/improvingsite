@@ -11,6 +11,7 @@ const talentFeedback = document.querySelector('.talent__feedback');
 const contactForm = document.querySelector('.contact__form');
 const formFeedback = document.querySelector('.form__feedback');
 const favoritoButtons = document.querySelectorAll('[data-action="favorito"]');
+const candidatarButtons = document.querySelectorAll('[data-action="candidatar"]');
 const profileForm = document.getElementById('profile-form');
 const profileFeedback = document.querySelector('.profile__feedback');
 const profileFields = {
@@ -26,9 +27,15 @@ const profileAlertsToggle = document.getElementById('profile-alertas');
 const profileAreaSelect = document.getElementById('profile-area');
 const profileResumeInput = document.getElementById('profile-curriculo');
 const talentAlertsToggle = document.getElementById('talent-alertas');
+const loginForm = document.getElementById('login-form');
+const loginFeedback = document.querySelector('.login__feedback');
+const loginRecommendations = document.querySelector('.login__recommendations');
+const loginRecommendationsList = document.querySelector('.login__recommendations-list');
 
 const API_ENDPOINT = '/api/candidates';
+const LOGIN_ENDPOINT = '/api/login';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
+const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
 function safeParseJSON(value, fallback) {
@@ -60,6 +67,27 @@ function saveProfile(profile) {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
 }
 
+function getStoredLoginEmail() {
+    return localStorage.getItem(LOGIN_STORAGE_KEY) ?? '';
+}
+
+function rememberLoginEmail(email) {
+    if (email) {
+        localStorage.setItem(LOGIN_STORAGE_KEY, email);
+    }
+}
+
+function prefillLoginEmail(email) {
+    if (!loginForm) {
+        return;
+    }
+
+    const emailField = loginForm.elements?.namedItem ? loginForm.elements.namedItem('email') : loginForm.querySelector('input[name="email"]');
+    if (emailField && typeof emailField.value !== 'undefined') {
+        emailField.value = email ?? '';
+    }
+}
+
 function candidateToProfile(candidate) {
     if (!candidate) {
         return null;
@@ -88,6 +116,58 @@ function formatProfileDate(dateString) {
     return parsed.toLocaleString('pt-BR', {
         dateStyle: 'long',
         timeStyle: 'short'
+    });
+}
+
+function clearJobHighlights() {
+    jobCards.forEach((card) => card.classList.remove('job-card--highlight'));
+}
+
+function applyAreaRecommendations(area) {
+    if (!loginRecommendationsList || !loginRecommendations) {
+        return;
+    }
+
+    clearJobHighlights();
+    loginRecommendationsList.innerHTML = '';
+
+    if (!area) {
+        loginRecommendations.hidden = true;
+        return;
+    }
+
+    const normalizedArea = String(area).trim();
+    const matches = Array.from(jobCards).filter((card) => card.dataset.area === normalizedArea);
+
+    loginRecommendations.hidden = false;
+
+    if (matches.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.textContent = 'Ainda não temos vagas recomendadas para esta área. Atualize seu cadastro para receber novidades assim que surgirem.';
+        loginRecommendationsList.appendChild(emptyItem);
+        return;
+    }
+
+    matches.forEach((card) => {
+        card.classList.add('job-card--highlight');
+        const jobLink = card.querySelector('[data-action="candidatar"]');
+        const title = jobLink?.dataset?.jobTitle ?? card.querySelector('h3')?.textContent?.trim() ?? 'Vaga em destaque';
+        const target = jobLink?.dataset?.jobTarget ?? '#vagas';
+
+        const listItem = document.createElement('li');
+        const anchor = document.createElement('a');
+        anchor.href = target;
+        anchor.textContent = title;
+        anchor.addEventListener('click', (event) => {
+            event.preventDefault();
+            const anchorTarget = document.querySelector(target);
+            if (anchorTarget) {
+                anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        listItem.appendChild(anchor);
+        loginRecommendationsList.appendChild(listItem);
     });
 }
 
@@ -140,13 +220,17 @@ function updateProfileUI(profile) {
     if (profileResumeInput) {
         profileResumeInput.value = '';
     }
+
+    applyAreaRecommendations(profile?.area);
 }
 
 function syncProfileFromCandidate(candidate) {
     const profileData = candidateToProfile(candidate);
     if (profileData) {
+        rememberLoginEmail(profileData.email);
         saveProfile(profileData);
         updateProfileUI(profileData);
+        prefillLoginEmail(profileData.email);
     }
     return profileData;
 }
@@ -154,6 +238,10 @@ function syncProfileFromCandidate(candidate) {
 function initializeProfile() {
     const storedProfile = getStoredProfile();
     updateProfileUI(storedProfile);
+    const storedLoginEmail = storedProfile?.email ?? getStoredLoginEmail();
+    if (storedLoginEmail) {
+        prefillLoginEmail(storedLoginEmail);
+    }
 
     if (storedProfile?.email) {
         fetchCandidateByEmail(storedProfile.email)
@@ -206,6 +294,30 @@ async function fetchCandidateByEmail(email) {
     }
 
     const payload = await response.json();
+    return payload?.candidate ?? null;
+}
+
+async function authenticateCandidate(email, password) {
+    const response = await fetch(LOGIN_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, senha: password })
+    });
+
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch (error) {
+        console.warn('Não foi possível interpretar a resposta de login.', error);
+    }
+
+    if (!response.ok) {
+        const message = payload?.message ?? 'Não foi possível validar suas credenciais no momento.';
+        throw new Error(message);
+    }
+
     return payload?.candidate ?? null;
 }
 
@@ -269,6 +381,59 @@ favoritoButtons.forEach((button) => {
     });
 });
 
+candidatarButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const storedProfile = getStoredProfile();
+        if (storedProfile?.email) {
+            prefillLoginEmail(storedProfile.email);
+        } else {
+            const storedEmail = getStoredLoginEmail();
+            if (storedEmail) {
+                prefillLoginEmail(storedEmail);
+            }
+        }
+
+        if (loginForm && typeof loginForm.scrollIntoView === 'function') {
+            setTimeout(() => {
+                loginForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    });
+});
+
+loginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!loginFeedback) {
+        return;
+    }
+
+    const formData = new FormData(loginForm);
+    const email = formData.get('email')?.toString().trim();
+    const senha = formData.get('senha')?.toString().trim();
+
+    if (!email || !senha) {
+        loginFeedback.textContent = 'Informe seu e-mail e senha para continuar.';
+        loginFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    loginFeedback.textContent = 'Validando credenciais...';
+    loginFeedback.style.color = '#2563eb';
+
+    try {
+        const candidate = await authenticateCandidate(email, senha);
+        const profileData = syncProfileFromCandidate(candidate);
+        rememberLoginEmail(email);
+        loginFeedback.textContent = profileData?.area
+            ? 'Login realizado! Veja abaixo as vagas recomendadas para você.'
+            : 'Login realizado! Atualize seu cadastro para receber recomendações personalizadas.';
+        loginFeedback.style.color = '#16a34a';
+    } catch (error) {
+        loginFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível fazer login agora. Tente novamente em instantes.';
+        loginFeedback.style.color = '#dc2626';
+    }
+});
+
 newsletterForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(newsletterForm);
@@ -295,6 +460,7 @@ talentForm?.addEventListener('submit', async (event) => {
     const formData = new FormData(talentForm);
     const nome = formData.get('nome')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
+    const senha = formData.get('senha')?.toString().trim();
     const area = formData.get('area')?.toString();
     const arquivo = formData.get('curriculo');
 
@@ -304,10 +470,19 @@ talentForm?.addEventListener('submit', async (event) => {
         return;
     }
 
+    if (!senha || senha.length < 6) {
+        talentFeedback.textContent = 'Crie uma senha com pelo menos 6 caracteres para acessar suas recomendações.';
+        talentFeedback.style.color = '#dc2626';
+        return;
+    }
+
     talentFeedback.textContent = 'Enviando seu cadastro...';
     talentFeedback.style.color = '#2563eb';
 
     try {
+        formData.set('nome', nome);
+        formData.set('email', email);
+        formData.set('senha', senha);
         if (talentAlertsToggle && !talentAlertsToggle.checked) {
             formData.delete('alertas');
         }
@@ -336,11 +511,18 @@ profileForm?.addEventListener('submit', async (event) => {
     const formData = new FormData(profileForm);
     const nome = formData.get('nome')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
+    const senha = formData.get('senha')?.toString().trim();
     const area = formData.get('area')?.toString();
     const arquivo = formData.get('curriculo');
 
     if (!nome || !email || !area) {
         profileFeedback.textContent = 'Informe nome, e-mail e área de interesse para atualizar seu cadastro.';
+        profileFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    if (senha && senha.length < 6) {
+        profileFeedback.textContent = 'A nova senha precisa ter pelo menos 6 caracteres.';
         profileFeedback.style.color = '#dc2626';
         return;
     }
@@ -355,6 +537,14 @@ profileForm?.addEventListener('submit', async (event) => {
 
     if (!hasNewFile) {
         formData.delete('curriculo');
+    }
+
+    formData.set('nome', nome);
+    formData.set('email', email);
+    if (senha) {
+        formData.set('senha', senha);
+    } else {
+        formData.delete('senha');
     }
 
     if (profileAlertsToggle && !profileAlertsToggle.checked) {

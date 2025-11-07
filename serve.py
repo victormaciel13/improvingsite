@@ -59,6 +59,10 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
             self._handle_save_candidate()
             return
 
+        if self.path == "/api/login":
+            self._handle_login()
+            return
+
         super().do_POST()
 
     def do_GET(self) -> None:
@@ -90,6 +94,7 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
                 "telefone": form.getfirst("telefone", "").strip(),
                 "area": form.getfirst("area", "").strip(),
                 "deseja_alertas": form.getfirst("alertas") == "sim",
+                "senha": form.getfirst("senha", "").strip(),
             }
 
             resume_field = form["curriculo"] if "curriculo" in form else None
@@ -116,6 +121,7 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
                 "telefone": str(data.get("telefone", "")).strip(),
                 "area": str(data.get("area", "")).strip(),
                 "deseja_alertas": bool(data.get("desejaAlertas")),
+                "senha": str(data.get("senha", "")).strip(),
             }
             return payload, None, None
 
@@ -156,6 +162,34 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
             return
 
         self._send_json({"candidate": candidate})
+
+    def _handle_login(self) -> None:
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length)
+
+        try:
+            data = json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._send_json({"message": "Formato de login inválido."}, status=HTTPStatus.BAD_REQUEST)
+            return
+
+        email = str(data.get("email", "")).strip()
+        password = str(data.get("senha", "")).strip()
+
+        try:
+            candidate = storage.authenticate_candidate(email, password)
+        except storage.ValidationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except Exception as exc:  # pragma: no cover - defensive guard
+            self.log_error("%s", str(exc))
+            self._send_json(
+                {"message": "Não foi possível validar seu login no momento."},
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+            return
+
+        self._send_json({"candidate": candidate, "message": "Login realizado com sucesso."})
 
 
 def find_available_port(preferred_port: int) -> int:
