@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Empregos | Acesso ao portal</title>
+    <meta name="description" content="Entre com seu e-mail e senha para acessar o portal da Ideal Empregos e acompanhar suas candidaturas.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="login-standalone">
+    <header class="login-header">
+        <div class="container login-header__inner">
+            <a class="brand" href="index.html" aria-label="Ideal Empregos">
+                <span class="brand__icon" aria-hidden="true">IE</span>
+                <span class="brand__text">Ideal Empregos</span>
+            </a>
+            <a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="login login--standalone" aria-labelledby="login-title">
+            <div class="container login__grid">
+                <div class="login__intro">
+                    <p class="tag">Acesse o portal</p>
+                    <h1 id="login-title">Faça login para continuar</h1>
+                    <p>Após entrar, você poderá explorar as vagas abertas, atualizar seus dados, enviar currículos e ativar alertas personalizados.</p>
+                    <ul class="login__benefits">
+                        <li>Receba recomendações de vagas alinhadas ao seu perfil</li>
+                        <li>Atualize informações e documentos sempre que precisar</li>
+                        <li>Acompanhe candidaturas e alertas em um só lugar</li>
+                    </ul>
+                    <p class="login__hint">Ainda não possui cadastro? <a href="home.html#cadastro">Cadastre seu currículo</a> para criar sua senha de acesso.</p>
+                </div>
+                <div class="login__panel">
+                    <form class="login__form" id="login-form" novalidate>
+                        <div class="form__field">
+                            <label for="login-email">E-mail cadastrado</label>
+                            <input type="email" id="login-email" name="email" placeholder="seuemail@exemplo.com" autocomplete="email" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="login-senha">Senha</label>
+                            <input type="password" id="login-senha" name="senha" placeholder="Sua senha" minlength="6" autocomplete="current-password" required>
+                            <p class="form__hint">Use a senha definida ao cadastrar seu currículo.</p>
+                        </div>
+                        <button class="btn btn--primary" type="submit">Entrar</button>
+                        <p class="login__feedback" role="status" aria-live="polite"></p>
+                    </form>
+                    <div class="login__support">
+                        <p>Esqueceu a senha? <a href="home.html#contato">Fale com nossa equipe</a> para solicitar uma redefinição.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="login-footer">
+        <div class="container">
+            <p>&copy; <span id="login-footer-year"></span> Ideal Empregos. Conectando talentos e oportunidades.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/login.js" defer></script>
+</body>
+</html>
