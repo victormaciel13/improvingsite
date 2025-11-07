@@ -41,6 +41,7 @@ Certifique-se de possuir o Python 3 instalado e execute:
 python -m unittest discover tests
 ```
 
+Os testes verificam se as seções principais estão presentes (incluindo a área de perfil), se os arquivos de estilos e scripts existem, se o botão principal do cabeçalho direciona para a área de cadastro e se os formulários de cadastro e de edição mantêm os campos essenciais e restrições de arquivo.
 Os testes verificam se as seções principais estão presentes (incluindo a área de perfil), se os arquivos de estilos e scripts existem, se há um botão funcional de WhatsApp e se os formulários de cadastro e de edição mantêm os campos essenciais e restrições de arquivo.
 Os testes verificam se as seções principais estão presentes, se os arquivos de estilos e scripts existem, se há um botão funcional de WhatsApp e se o formulário de cadastro de talentos mantém os campos essenciais e restrições de arquivo.
 Os testes verificam se as seções principais estão presentes, se os arquivos de estilos e scripts existem e se há um botão funcional de WhatsApp, garantindo que os elementos essenciais do site continuem em ordem.

@@ -52,6 +52,14 @@ class TestSiteStructure(unittest.TestCase):
                     msg=f"A seção '{name}' deve estar presente na página inicial.",
                 )
 
+    def test_header_cta_points_to_cadastro(self):
+        header_cta = re.search(r'<a class=\"cta\" href=\"(#.*?)\"[^>]*>(.*?)</a>', HTML_CONTENT)
+        self.assertIsNotNone(header_cta, "O cabeçalho deve possuir um botão de chamada para ação.")
+        if header_cta:
+            self.assertEqual(
+                header_cta.group(1),
+                "#cadastro",
+                "O botão principal do cabeçalho deve direcionar para a seção de cadastro.",
     def test_whatsapp_cta_link(self):
         match = re.search(r'href=\"(https://wa\.me/[^\"]+)\"', HTML_CONTENT)
         self.assertIsNotNone(match, "Deve existir um link para contato via WhatsApp.")
