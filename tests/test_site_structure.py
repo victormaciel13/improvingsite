@@ -83,6 +83,7 @@ class TestSiteStructure(unittest.TestCase):
 
     def test_jobs_section_has_cards(self):
         cards = re.findall(r'class=\"job-card\"', HOME_CONTENT)
+        cards = re.findall(r'class=\"job-card\"', HTML_CONTENT)
         self.assertGreaterEqual(
             len(cards),
             4,
