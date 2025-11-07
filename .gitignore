@@ -1,0 +1,5 @@
+# Ignore database and uploaded resumes generated at runtime
+/data/
+*.db
+*.sqlite3
+*.sqlite
