@@ -14,9 +14,6 @@ const favoritoButtons = document.querySelectorAll('[data-action="favorito"]');
 const candidatarButtons = document.querySelectorAll('[data-action="candidatar"]');
 const profileForm = document.getElementById('profile-form');
 const profileFeedback = document.querySelector('.profile__feedback');
-const bodyElement = document.body;
-const loginSection = document.querySelector('.login');
-const heroSection = document.querySelector('.hero');
 const profileFields = {
     nome: document.querySelector('[data-profile-field="nome"]'),
     email: document.querySelector('[data-profile-field="email"]'),
@@ -30,13 +27,8 @@ const profileAlertsToggle = document.getElementById('profile-alertas');
 const profileAreaSelect = document.getElementById('profile-area');
 const profileResumeInput = document.getElementById('profile-curriculo');
 const talentAlertsToggle = document.getElementById('talent-alertas');
-const loginForm = document.getElementById('login-form');
-const loginFeedback = document.querySelector('.login__feedback');
-const loginRecommendations = document.querySelector('.login__recommendations');
-const loginRecommendationsList = document.querySelector('.login__recommendations-list');
 
 const API_ENDPOINT = '/api/candidates';
-const LOGIN_ENDPOINT = '/api/login';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
@@ -71,25 +63,9 @@ function saveProfile(profile) {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
 }
 
-function getStoredLoginEmail() {
-    return localStorage.getItem(LOGIN_STORAGE_KEY) ?? '';
-}
-
 function rememberLoginEmail(email) {
     if (email) {
         localStorage.setItem(LOGIN_STORAGE_KEY, email);
-    }
-}
-
-function setSessionAuthState(isAuthenticated) {
-    try {
-        if (isAuthenticated) {
-            sessionStorage.setItem(AUTH_STATE_KEY, 'authenticated');
-        } else {
-            sessionStorage.removeItem(AUTH_STATE_KEY);
-        }
-    } catch (error) {
-        console.warn('Não foi possível atualizar o estado de autenticação da sessão.', error);
     }
 }
 
@@ -99,36 +75,6 @@ function isSessionAuthenticated() {
     } catch (error) {
         console.warn('Não foi possível verificar o estado de autenticação da sessão.', error);
         return false;
-    }
-}
-
-function activateLoginGate() {
-    if (!loginSection) {
-        return;
-    }
-    loginSection.classList.add('login--gate');
-    bodyElement.classList.add('auth-locked');
-}
-
-function releaseLoginGate({ scrollToContent = true } = {}) {
-    bodyElement.classList.remove('auth-locked');
-    loginSection?.classList.remove('login--gate');
-
-    if (scrollToContent && heroSection && typeof heroSection.scrollIntoView === 'function') {
-        setTimeout(() => {
-            heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 200);
-    }
-}
-
-function prefillLoginEmail(email) {
-    if (!loginForm) {
-        return;
-    }
-
-    const emailField = loginForm.elements?.namedItem ? loginForm.elements.namedItem('email') : loginForm.querySelector('input[name="email"]');
-    if (emailField && typeof emailField.value !== 'undefined') {
-        emailField.value = email ?? '';
     }
 }
 
@@ -168,51 +114,15 @@ function clearJobHighlights() {
 }
 
 function applyAreaRecommendations(area) {
-    if (!loginRecommendationsList || !loginRecommendations) {
-        return;
-    }
-
     clearJobHighlights();
-    loginRecommendationsList.innerHTML = '';
 
     if (!area) {
-        loginRecommendations.hidden = true;
         return;
     }
 
     const normalizedArea = String(area).trim();
     const matches = Array.from(jobCards).filter((card) => card.dataset.area === normalizedArea);
-
-    loginRecommendations.hidden = false;
-
-    if (matches.length === 0) {
-        const emptyItem = document.createElement('li');
-        emptyItem.textContent = 'Ainda não temos vagas recomendadas para esta área. Atualize seu cadastro para receber novidades assim que surgirem.';
-        loginRecommendationsList.appendChild(emptyItem);
-        return;
-    }
-
-    matches.forEach((card) => {
-        card.classList.add('job-card--highlight');
-        const jobLink = card.querySelector('[data-action="candidatar"]');
-        const title = jobLink?.dataset?.jobTitle ?? card.querySelector('h3')?.textContent?.trim() ?? 'Vaga em destaque';
-        const target = jobLink?.dataset?.jobTarget ?? '#vagas';
-
-        const listItem = document.createElement('li');
-        const anchor = document.createElement('a');
-        anchor.href = target;
-        anchor.textContent = title;
-        anchor.addEventListener('click', (event) => {
-            event.preventDefault();
-            const anchorTarget = document.querySelector(target);
-            if (anchorTarget) {
-                anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-
-        listItem.appendChild(anchor);
-        loginRecommendationsList.appendChild(listItem);
-    });
+    matches.forEach((card) => card.classList.add('job-card--highlight'));
 }
 
 function getAreaLabel(value) {
@@ -274,7 +184,6 @@ function syncProfileFromCandidate(candidate) {
         rememberLoginEmail(profileData.email);
         saveProfile(profileData);
         updateProfileUI(profileData);
-        prefillLoginEmail(profileData.email);
     }
     return profileData;
 }
@@ -282,11 +191,6 @@ function syncProfileFromCandidate(candidate) {
 function initializeProfile() {
     const storedProfile = getStoredProfile();
     updateProfileUI(storedProfile);
-    const storedLoginEmail = storedProfile?.email ?? getStoredLoginEmail();
-    if (storedLoginEmail) {
-        prefillLoginEmail(storedLoginEmail);
-    }
-
     if (storedProfile?.email) {
         fetchCandidateByEmail(storedProfile.email)
             .then((candidate) => {
@@ -300,16 +204,10 @@ function initializeProfile() {
     }
 }
 
-initializeProfile();
-
-if (isSessionAuthenticated()) {
-    releaseLoginGate({ scrollToContent: false });
+if (!isSessionAuthenticated()) {
+    window.location.replace('index.html');
 } else {
-    activateLoginGate();
-    const firstLoginField = loginForm?.querySelector('input');
-    if (firstLoginField && typeof firstLoginField.focus === 'function') {
-        setTimeout(() => firstLoginField.focus(), 150);
-    }
+    initializeProfile();
 }
 
 async function sendCandidateData(formData) {
@@ -348,30 +246,6 @@ async function fetchCandidateByEmail(email) {
     }
 
     const payload = await response.json();
-    return payload?.candidate ?? null;
-}
-
-async function authenticateCandidate(email, password) {
-    const response = await fetch(LOGIN_ENDPOINT, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, senha: password })
-    });
-
-    let payload = null;
-    try {
-        payload = await response.json();
-    } catch (error) {
-        console.warn('Não foi possível interpretar a resposta de login.', error);
-    }
-
-    if (!response.ok) {
-        const message = payload?.message ?? 'Não foi possível validar suas credenciais no momento.';
-        throw new Error(message);
-    }
-
     return payload?.candidate ?? null;
 }
 
@@ -436,59 +310,29 @@ favoritoButtons.forEach((button) => {
 });
 
 candidatarButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        const storedProfile = getStoredProfile();
-        if (storedProfile?.email) {
-            prefillLoginEmail(storedProfile.email);
-        } else {
-            const storedEmail = getStoredLoginEmail();
-            if (storedEmail) {
-                prefillLoginEmail(storedEmail);
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const jobTargetSelector = button.dataset.jobTarget;
+        if (jobTargetSelector) {
+            const jobTarget = document.querySelector(jobTargetSelector);
+            if (jobTarget) {
+                jobTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        if (loginForm && typeof loginForm.scrollIntoView === 'function') {
+        const cadastroSection = document.getElementById('cadastro');
+        if (cadastroSection && typeof cadastroSection.scrollIntoView === 'function') {
             setTimeout(() => {
-                loginForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+                cadastroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+
+        const firstTalentField = talentForm?.querySelector('input, select, textarea');
+        if (firstTalentField && typeof firstTalentField.focus === 'function') {
+            setTimeout(() => firstTalentField.focus(), 400);
         }
     });
-});
-
-loginForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!loginFeedback) {
-        return;
-    }
-
-    const formData = new FormData(loginForm);
-    const email = formData.get('email')?.toString().trim();
-    const senha = formData.get('senha')?.toString().trim();
-
-    if (!email || !senha) {
-        loginFeedback.textContent = 'Informe seu e-mail e senha para continuar.';
-        loginFeedback.style.color = '#dc2626';
-        return;
-    }
-
-    loginFeedback.textContent = 'Validando credenciais...';
-    loginFeedback.style.color = '#2563eb';
-
-    try {
-        const candidate = await authenticateCandidate(email, senha);
-        const profileData = syncProfileFromCandidate(candidate);
-        rememberLoginEmail(email);
-        setSessionAuthState(true);
-        releaseLoginGate({ scrollToContent: true });
-        loginFeedback.textContent = profileData?.area
-            ? 'Login realizado! Veja abaixo as vagas recomendadas para você.'
-            : 'Login realizado! Atualize seu cadastro para receber recomendações personalizadas.';
-        loginFeedback.style.color = '#16a34a';
-    } catch (error) {
-        setSessionAuthState(false);
-        loginFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível fazer login agora. Tente novamente em instantes.';
-        loginFeedback.style.color = '#dc2626';
-    }
 });
 
 newsletterForm?.addEventListener('submit', (event) => {

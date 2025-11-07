@@ -3,20 +3,25 @@ import unittest
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-HTML_PATH = BASE_DIR / "index.html"
+HOME_PATH = BASE_DIR / "home.html"
+LOGIN_PATH = BASE_DIR / "index.html"
 CSS_PATH = BASE_DIR / "assets" / "css" / "style.css"
-JS_PATH = BASE_DIR / "assets" / "js" / "main.js"
+MAIN_JS_PATH = BASE_DIR / "assets" / "js" / "main.js"
+LOGIN_JS_PATH = BASE_DIR / "assets" / "js" / "login.js"
 
-HTML_CONTENT = HTML_PATH.read_text(encoding="utf-8")
+HOME_CONTENT = HOME_PATH.read_text(encoding="utf-8")
+LOGIN_CONTENT = LOGIN_PATH.read_text(encoding="utf-8")
 
 
 class TestSiteStructure(unittest.TestCase):
     def test_source_files_without_merge_conflicts(self):
         merge_markers = ("<<<<<<<", "=======", ">>>>>>>")
         tracked_files = [
-            HTML_PATH,
+            HOME_PATH,
+            LOGIN_PATH,
             CSS_PATH,
-            JS_PATH,
+            MAIN_JS_PATH,
+            LOGIN_JS_PATH,
             BASE_DIR / "README.md",
             BASE_DIR / "serve.py",
         ]
@@ -34,13 +39,12 @@ class TestSiteStructure(unittest.TestCase):
                         ),
                     )
 
-    def test_main_sections_present(self):
+    def test_home_sections_present(self):
         selectors = {
             "hero": r'class=\"hero\"',
             "sobre": r'id=\"sobre\"',
             "servicos": r'id=\"servicos\"',
             "vagas": r'id=\"vagas\"',
-            "login": r'id=\"login\"',
             "cadastro": r'id=\"cadastro\"',
             "perfil": r'id=\"perfil\"',
             "processo": r'id=\"processo\"',
@@ -49,38 +53,28 @@ class TestSiteStructure(unittest.TestCase):
         for name, pattern in selectors.items():
             with self.subTest(section=name):
                 self.assertIsNotNone(
-                    re.search(pattern, HTML_CONTENT),
+                    re.search(pattern, HOME_CONTENT),
                     msg=f"A seção '{name}' deve estar presente na página inicial.",
                 )
 
     def test_navigation_links_include_cadastro(self):
-        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HTML_CONTENT)
+        links = re.findall(r'<a href=\"(#.*?)\"[^>]*>([^<]+)</a>', HOME_CONTENT)
         cadastro_links = [href for href, text in links if href == "#cadastro" and "Cadastre" in text]
         self.assertTrue(
             cadastro_links,
-            "A página precisa manter um link visível para a seção de cadastro de talentos.",
+            "A página inicial precisa manter um link visível para a seção de cadastro de talentos.",
         )
 
-    def test_header_has_whatsapp_cta(self):
-        whatsapp_link = re.search(r'href=\"https://wa\.me/551135391330\"', HTML_CONTENT)
+    def test_home_header_has_whatsapp_cta(self):
+        whatsapp_link = re.search(r'href=\"https://wa\.me/551135391330\"', HOME_CONTENT)
         self.assertIsNotNone(
             whatsapp_link,
-            "O cabeçalho deve oferecer um botão direto para o canal de WhatsApp informado.",
+            "O cabeçalho da home deve oferecer um botão direto para o canal de WhatsApp informado.",
         )
 
-    def test_initial_state_protected_by_login_gate(self):
-        body_has_lock = re.search(r'<body[^>]*class=\"[^\"]*auth-locked', HTML_CONTENT)
-        self.assertIsNotNone(body_has_lock, "O corpo da página deve iniciar com a classe 'auth-locked'.")
-
-        login_gate = re.search(r'class=\"login[^\"]*login--gate', HTML_CONTENT)
-        self.assertIsNotNone(
-            login_gate,
-            "A seção de login deve carregar com a classe 'login--gate' para bloquear o restante do conteúdo.",
-        )
-
-    def test_navigation_targets_existing_sections(self):
-        nav_targets = re.findall(r'<a href="(#[a-z-]+)"', HTML_CONTENT)
-        available_ids = set(re.findall(r'id=\"([a-z-]+)\"', HTML_CONTENT))
+    def test_home_navigation_targets_existing_sections(self):
+        nav_targets = re.findall(r'<a href="(#[a-z-]+)"', HOME_CONTENT)
+        available_ids = set(re.findall(r'id=\"([a-z-]+)\"', HOME_CONTENT))
         missing_targets = [target for target in nav_targets if target.startswith('#') and target[1:] not in available_ids]
         self.assertFalse(
             missing_targets,
@@ -88,6 +82,7 @@ class TestSiteStructure(unittest.TestCase):
         )
 
     def test_jobs_section_has_cards(self):
+        cards = re.findall(r'class=\"job-card\"', HOME_CONTENT)
         cards = re.findall(r'class=\"job-card\"', HTML_CONTENT)
         self.assertGreaterEqual(
             len(cards),
@@ -95,19 +90,22 @@ class TestSiteStructure(unittest.TestCase):
             "A seção de vagas deve exibir pelo menos quatro cards de oportunidades.",
         )
 
+    def test_job_cards_link_to_cadastro(self):
+        apply_links = re.findall(r'<a class=\"btn btn--ghost\" href=\"(#[a-z-]+)\"[^>]*data-action=\"candidatar\"', HOME_CONTENT)
+        self.assertTrue(
+            all(link == '#cadastro' for link in apply_links),
+            "Todos os botões de candidatura devem direcionar usuários para a área de cadastro na própria página.",
+        )
+
     def test_assets_exist_and_not_empty(self):
-        self.assertTrue(CSS_PATH.exists(), "O arquivo de estilos deve existir.")
-        self.assertGreater(
-            len(CSS_PATH.read_text(encoding="utf-8").strip()),
-            0,
-            "O arquivo de estilos não pode estar vazio.",
-        )
-        self.assertTrue(JS_PATH.exists(), "O arquivo de scripts deve existir.")
-        self.assertGreater(
-            len(JS_PATH.read_text(encoding="utf-8").strip()),
-            0,
-            "O arquivo de scripts não pode estar vazio.",
-        )
+        for asset in (CSS_PATH, MAIN_JS_PATH, LOGIN_JS_PATH):
+            with self.subTest(asset=asset.name):
+                self.assertTrue(asset.exists(), f"O arquivo {asset.name} deve existir.")
+                self.assertGreater(
+                    len(asset.read_text(encoding="utf-8").strip()),
+                    0,
+                    f"O arquivo {asset.name} não pode estar vazio.",
+                )
 
     def test_talent_form_has_required_fields(self):
         required_fields = {
@@ -120,16 +118,16 @@ class TestSiteStructure(unittest.TestCase):
         for field, pattern in required_fields.items():
             with self.subTest(field=field):
                 self.assertIsNotNone(
-                    re.search(pattern, HTML_CONTENT),
+                    re.search(pattern, HOME_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de cadastro de talentos.",
                 )
 
-        senha_input = re.search(r'<input[^>]*id=\"talent-senha\"[^>]*>', HTML_CONTENT)
+        senha_input = re.search(r'<input[^>]*id=\"talent-senha\"[^>]*>', HOME_CONTENT)
         self.assertIsNotNone(senha_input)
         if senha_input:
             self.assertIn('type="password"', senha_input.group(0))
 
-        file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', HTML_CONTENT)
+        file_accept_match = re.search(r'id=\"talent-curriculo\"[^>]+accept=\"([^\"]+)\"', HOME_CONTENT)
         self.assertIsNotNone(file_accept_match, "O upload de currículo deve restringir os formatos permitidos.")
         if file_accept_match:
             accepted_formats = file_accept_match.group(1)
@@ -142,7 +140,7 @@ class TestSiteStructure(unittest.TestCase):
 
     def test_profile_section_has_editing_capabilities(self):
         self.assertIsNotNone(
-            re.search(r'id=\"perfil\"', HTML_CONTENT),
+            re.search(r'id=\"perfil\"', HOME_CONTENT),
             msg="A área de perfil deve estar presente para permitir atualizações de cadastro.",
         )
 
@@ -157,16 +155,16 @@ class TestSiteStructure(unittest.TestCase):
         for field, pattern in profile_fields.items():
             with self.subTest(field=field):
                 self.assertIsNotNone(
-                    re.search(pattern, HTML_CONTENT),
+                    re.search(pattern, HOME_CONTENT),
                     msg=f"O campo '{field}' deve estar presente no formulário de edição de perfil.",
                 )
 
-        profile_password_input = re.search(r'<input[^>]*id=\"profile-senha\"[^>]*>', HTML_CONTENT)
+        profile_password_input = re.search(r'<input[^>]*id=\"profile-senha\"[^>]*>', HOME_CONTENT)
         self.assertIsNotNone(profile_password_input)
         if profile_password_input:
             self.assertIn('type="password"', profile_password_input.group(0))
 
-        profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', HTML_CONTENT)
+        profile_checkbox = re.search(r'<input[^>]*id=\"profile-alertas\"[^>]*>', HOME_CONTENT)
         self.assertIsNotNone(
             profile_checkbox,
             "O formulário de perfil deve permitir ativar ou desativar alertas por e-mail.",
@@ -178,27 +176,35 @@ class TestSiteStructure(unittest.TestCase):
                 "O campo de alertas deve ser um checkbox para controlar as notificações.",
             )
 
-    def test_login_section_has_form_and_recommendations(self):
+    def test_login_page_has_form_and_links(self):
         self.assertIsNotNone(
-            re.search(r'id=\"login-form\"', HTML_CONTENT),
-            msg="A página deve oferecer um formulário de login dedicado para candidatos cadastrados.",
+            re.search(r'id=\"login-form\"', LOGIN_CONTENT),
+            msg="A página de login deve oferecer um formulário dedicado para candidatos cadastrados.",
         )
 
-        self.assertIsNotNone(
-            re.search(r'class=\"login__recommendations\"', HTML_CONTENT),
-            msg="A seção de login deve expor um bloco para recomendações personalizadas.",
-        )
-
-        login_password_field = re.search(r'<input[^>]*id=\"login-senha\"[^>]*>', HTML_CONTENT)
+        login_password_field = re.search(r'<input[^>]*id=\"login-senha\"[^>]*>', LOGIN_CONTENT)
         self.assertIsNotNone(login_password_field)
         if login_password_field:
             self.assertIn('type="password"', login_password_field.group(0))
 
-    def test_job_cards_redirect_candidates_to_login(self):
-        apply_links = re.findall(r'<a class=\"btn btn--ghost\" href=\"(#[a-z-]+)\"[^>]*data-action=\"candidatar\"', HTML_CONTENT)
-        self.assertTrue(
-            all(link == '#login' for link in apply_links),
-            "Todos os botões de candidatura devem direcionar usuários para a área de login.",
+        cadastro_link = re.search(r'href=\"home\.html#cadastro\"', LOGIN_CONTENT)
+        self.assertIsNotNone(
+            cadastro_link,
+            "A página de login deve apontar para o fluxo de cadastro de currículos para novos usuários.",
+        )
+
+    def test_login_page_header_has_whatsapp_cta(self):
+        whatsapp_link = re.search(r'href=\"https://wa\.me/551135391330\"', LOGIN_CONTENT)
+        self.assertIsNotNone(
+            whatsapp_link,
+            "O cabeçalho da página de login deve oferecer o botão de WhatsApp atualizado.",
+        )
+
+    def test_login_page_uses_dedicated_script(self):
+        script_tag = re.search(r'assets/js/login\.js', LOGIN_CONTENT)
+        self.assertIsNotNone(
+            script_tag,
+            "A página de login precisa carregar o script dedicado para autenticação e redirecionamento.",
         )
 
 
