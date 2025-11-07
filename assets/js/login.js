@@ -3,10 +3,21 @@ const PROFILE_ENDPOINT = '/api/candidates';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
+const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
 const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
 const loginFeedback = document.querySelector('.login__feedback');
+const registerFeedback = document.querySelector('.register__feedback');
+const registerAlertsToggle = document.getElementById('register-alertas');
+const registerResumeInput = document.getElementById('register-curriculo');
+const registerFileDisplay = document.querySelector('[data-register-file]');
+const authToggleButtons = document.querySelectorAll('[data-auth-view]');
+const authPanes = document.querySelectorAll('[data-auth-pane]');
+const authTriggers = document.querySelectorAll('[data-auth-trigger]');
 const footerYear = document.getElementById('login-footer-year');
+const registerFileDefaultText = registerFileDisplay?.textContent?.trim() ||
+    'Selecione um arquivo nos formatos permitidos.';
 
 function safeParseJSON(value, fallback = null) {
     try {
@@ -73,6 +84,14 @@ function candidateToProfile(candidate) {
     };
 }
 
+function syncProfile(candidate) {
+    const profile = candidateToProfile(candidate);
+    if (profile) {
+        saveProfile(profile);
+    }
+    return profile;
+}
+
 async function authenticateCandidate(email, senha) {
     const response = await fetch(LOGIN_ENDPOINT, {
         method: 'POST',
@@ -91,6 +110,27 @@ async function authenticateCandidate(email, senha) {
 
     if (!response.ok) {
         const message = payload?.message ?? 'Não foi possível validar suas credenciais no momento.';
+        throw new Error(message);
+    }
+
+    return payload?.candidate ?? null;
+}
+
+async function sendCandidateData(formData) {
+    const response = await fetch(PROFILE_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+    });
+
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch (error) {
+        console.warn('Não foi possível interpretar a resposta do cadastro.', error);
+    }
+
+    if (!response.ok) {
+        const message = payload?.message ?? 'Não foi possível concluir o cadastro agora.';
         throw new Error(message);
     }
 
@@ -116,21 +156,41 @@ async function fetchCandidateByEmail(email) {
     }
 }
 
-function syncProfile(candidate) {
-    const profile = candidateToProfile(candidate);
-    if (profile) {
-        saveProfile(profile);
+async function syncCandidateAfterResponse(candidate, fallbackEmail) {
+    const profile = syncProfile(candidate);
+    const email = candidate?.email ?? fallbackEmail ?? '';
+
+    if (email) {
+        rememberLoginEmail(email);
     }
+
+    if (!profile && email) {
+        const refreshed = await fetchCandidateByEmail(email);
+        if (refreshed) {
+            return syncProfile(refreshed);
+        }
+    }
+
     return profile;
 }
 
-function prefillEmailField() {
+function prefillEmailFields() {
     const storedProfile = getStoredProfile();
     const storedEmail = storedProfile?.email ?? getStoredLoginEmail();
-    if (storedEmail && loginForm) {
-        const emailField = loginForm.elements.namedItem ? loginForm.elements.namedItem('email') : loginForm.querySelector('[name="email"]');
-        if (emailField) {
-            emailField.value = storedEmail;
+
+    if (storedEmail) {
+        const loginEmailField = loginForm?.elements.namedItem
+            ? loginForm.elements.namedItem('email')
+            : loginForm?.querySelector('[name="email"]');
+        if (loginEmailField) {
+            loginEmailField.value = storedEmail;
+        }
+
+        const registerEmailField = registerForm?.elements.namedItem
+            ? registerForm.elements.namedItem('email')
+            : registerForm?.querySelector('[name="email"]');
+        if (registerEmailField) {
+            registerEmailField.value = storedEmail;
         }
     }
 }
@@ -141,12 +201,99 @@ function updateFooterYear() {
     }
 }
 
+function isValidResumeFile(file) {
+    if (!file || typeof file !== 'object') {
+        return false;
+    }
+
+    const fileName = typeof file.name === 'string' ? file.name : '';
+    if (!fileName) {
+        return false;
+    }
+
+    return ALLOWED_RESUME_EXTENSIONS.some((extension) =>
+        fileName.toLowerCase().endsWith(extension)
+    );
+}
+
+function updateRegisterFileDisplay(fileName) {
+    if (!registerFileDisplay) {
+        return;
+    }
+
+    registerFileDisplay.textContent = fileName ? fileName : registerFileDefaultText;
+}
+
+function showAuthPane(view, shouldFocus = true) {
+    const normalizedView = view === 'register' ? 'register' : 'login';
+
+    authToggleButtons.forEach((button) => {
+        const target = button.dataset.authView;
+        const isActive = target === normalizedView;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+    });
+
+    authPanes.forEach((pane) => {
+        const target = pane.dataset.authPane;
+        const isActive = target === normalizedView;
+        pane.classList.toggle('is-active', isActive);
+        if (isActive) {
+            pane.removeAttribute('hidden');
+        } else {
+            pane.setAttribute('hidden', '');
+        }
+    });
+
+    if (!shouldFocus) {
+        return;
+    }
+
+    if (normalizedView === 'register') {
+        const firstField = registerForm?.querySelector('input, select');
+        firstField?.focus();
+    } else {
+        const firstField = loginForm?.querySelector('input');
+        firstField?.focus();
+    }
+}
+
 if (isSessionAuthenticated()) {
     window.location.replace('home.html');
 }
 
-prefillEmailField();
+prefillEmailFields();
+updateRegisterFileDisplay('');
 updateFooterYear();
+
+const initialView = window.location.hash.replace('#', '') === 'cadastro' ? 'register' : 'login';
+showAuthPane(initialView, false);
+
+authToggleButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const targetView = button.dataset.authView ?? 'login';
+        showAuthPane(targetView);
+    });
+});
+
+authTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        const targetView = trigger.dataset.authTrigger ?? 'login';
+        showAuthPane(targetView);
+    });
+});
+
+window.addEventListener('hashchange', () => {
+    if (window.location.hash.replace('#', '') === 'cadastro') {
+        showAuthPane('register', false);
+    }
+});
+
+registerResumeInput?.addEventListener('change', () => {
+    const file = registerResumeInput.files?.[0];
+    updateRegisterFileDisplay(file?.name ?? '');
+});
 
 loginForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -169,15 +316,7 @@ loginForm?.addEventListener('submit', async (event) => {
 
     try {
         const candidate = await authenticateCandidate(email, senha);
-        const profile = syncProfile(candidate);
-        rememberLoginEmail(email);
-        if (!profile && candidate?.email) {
-            const refreshed = await fetchCandidateByEmail(candidate.email);
-            if (refreshed) {
-                syncProfile(refreshed);
-            }
-        }
-
+        await syncCandidateAfterResponse(candidate, email);
         setSessionAuthState(true);
         loginFeedback.textContent = 'Login realizado com sucesso! Redirecionando...';
         loginFeedback.style.color = '#16a34a';
@@ -186,7 +325,70 @@ loginForm?.addEventListener('submit', async (event) => {
         }, 400);
     } catch (error) {
         setSessionAuthState(false);
-        loginFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível fazer login agora. Tente novamente em instantes.';
+        loginFeedback.textContent = error instanceof Error
+            ? error.message
+            : 'Não foi possível fazer login agora. Tente novamente em instantes.';
         loginFeedback.style.color = '#dc2626';
+    }
+});
+
+registerForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!registerFeedback) {
+        return;
+    }
+
+    const formData = new FormData(registerForm);
+    const nome = formData.get('nome')?.toString().trim();
+    const email = formData.get('email')?.toString().trim();
+    const senha = formData.get('senha')?.toString().trim();
+    const area = formData.get('area')?.toString();
+    const arquivo = formData.get('curriculo');
+
+    if (!nome || !email || !area) {
+        registerFeedback.textContent = 'Preencha nome, e-mail e área de interesse para continuar.';
+        registerFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    if (!senha || senha.length < 6) {
+        registerFeedback.textContent = 'Crie uma senha com pelo menos 6 caracteres.';
+        registerFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    if (!isValidResumeFile(arquivo)) {
+        registerFeedback.textContent = 'Anexe um currículo válido nos formatos PDF, DOC, DOCX, ODT ou RTF.';
+        registerFeedback.style.color = '#dc2626';
+        return;
+    }
+
+    registerFeedback.textContent = 'Criando sua conta...';
+    registerFeedback.style.color = '#2563eb';
+
+    try {
+        formData.set('nome', nome);
+        formData.set('email', email);
+        formData.set('senha', senha);
+        if (registerAlertsToggle && !registerAlertsToggle.checked) {
+            formData.delete('alertas');
+        }
+
+        const candidate = await sendCandidateData(formData);
+        await syncCandidateAfterResponse(candidate, email);
+        setSessionAuthState(true);
+        registerFeedback.textContent = 'Cadastro concluído! Redirecionando para a plataforma...';
+        registerFeedback.style.color = '#16a34a';
+        registerForm.reset();
+        updateRegisterFileDisplay('');
+        setTimeout(() => {
+            window.location.href = 'home.html';
+        }, 500);
+    } catch (error) {
+        setSessionAuthState(false);
+        registerFeedback.textContent = error instanceof Error
+            ? error.message
+            : 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
+        registerFeedback.style.color = '#dc2626';
     }
 });

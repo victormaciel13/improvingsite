@@ -3,7 +3,7 @@
 Este projeto contém a landing page reformulada da Ideal Empregos com foco em profissionalismo, responsividade e interações modernas.
 
 ## Estrutura do projeto
-- `index.html`: tela de login exibida ao acessar o localhost.
+- `index.html`: tela de login exibida ao acessar o localhost, com aba dedicada para novos cadastros.
 - `home.html`: landing page completa apresentada após a autenticação.
 - `assets/css/style.css`: estilos globais e componentes reutilizáveis.
 - `assets/js/main.js`: comportamentos interativos da landing page autenticada.
@@ -13,7 +13,8 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - `storage.py`: camada de persistência responsável pelo banco de dados SQLite que armazena os cadastros.
 
 ## Recursos para candidatos
-- **Tela de login dedicada** (`index.html`), isolada da landing page principal e com feedback imediato ao validar e-mail e senha.
+- **Tela de login dedicada** (`index.html`), isolada da landing page principal, com abas para login e cadastro e feedback imediato em cada envio.
+- **Cadastro direto no login** para quem ainda não possui acesso, incluindo upload de currículo e consentimento para alertas antes de entrar na plataforma.
 - **Landing page autenticada** (`home.html`) com seções completas de serviços, vagas, processos, blog e depoimentos para quem já fez login.
 - **Botão oficial de WhatsApp (11 3539-1330)** fixo no cabeçalho das duas páginas para facilitar o contato com a equipe de atendimento.
 - **Formulário “Cadastre seu currículo”** com upload de arquivos (PDF/DOC) e preferência por alertas por e-mail, alimentando diretamente o banco de dados SQLite.
@@ -22,10 +23,11 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - **Mensagens de feedback acessíveis** em todos os formulários para orientar o usuário em casos de erro ou sucesso.
 
 ## Fluxo inicial de acesso
-1. **Acesso ao login:** ao abrir `http://localhost:<porta>/` o usuário é direcionado para `index.html`, que contém apenas o formulário de autenticação.
-2. **Validação de credenciais:** o envio do formulário dispara `POST /api/login`; em caso de sucesso o script salva o e-mail para preenchimento automático, registra o estado da sessão em `sessionStorage` e redireciona para `home.html`.
-3. **Navegação autenticada:** a landing page exibe todas as seções e formulários apenas quando a sessão está autenticada. Caso a sessão expire ou seja limpa, qualquer tentativa de acessar `home.html` resulta em redirecionamento imediato para o login.
-4. **Sessão persistida enquanto o navegador estiver aberto:** mantendo a aba ativa, o usuário pode atualizar a página ou navegar entre âncoras sem refazer o login.
+1. **Acesso ao login:** ao abrir `http://localhost:<porta>/` o usuário é direcionado para `index.html`, que exibe abas para entrar com uma conta existente ou criar um novo acesso.
+2. **Cadastro de novos usuários:** selecionar a aba “Quero me cadastrar” envia os dados via `POST /api/candidates`, armazenando currículo, preferências de alertas e senha já na primeira experiência.
+3. **Validação de credenciais:** quem já possui conta utiliza a aba de login, que dispara `POST /api/login`; em caso de sucesso o script salva o e-mail para preenchimento automático, registra o estado da sessão em `sessionStorage` e redireciona para `home.html`.
+4. **Navegação autenticada:** a landing page exibe todas as seções e formulários apenas quando a sessão está autenticada. Caso a sessão expire ou seja limpa, qualquer tentativa de acessar `home.html` resulta em redirecionamento imediato para o login.
+5. **Sessão persistida enquanto o navegador estiver aberto:** mantendo a aba ativa, o usuário pode atualizar a página ou navegar entre âncoras sem refazer o login.
 
 ## Como visualizar o site localmente
 1. Garanta que você tenha o Python 3 instalado.
@@ -53,7 +55,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - O endpoint `POST /api/login` valida credenciais (`email` + `senha`) e devolve os dados do candidato quando o login é bem-sucedido.
 
 ## Como usar o login e as recomendações
-1. **Cadastro inicial:** preencha o formulário "Cadastre seu currículo" em `home.html` com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.
+1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou a seção "Cadastre seu currículo" após o login) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.
 2. **Autenticação obrigatória:** sempre que acessar o localhost, informe o mesmo e-mail e senha em `index.html` para seguir para a landing page autenticada.
 3. **Vagas em destaque:** após o login, a landing page destaca automaticamente os cards de vagas com a mesma área cadastrada, facilitando o acesso rápido às oportunidades relevantes.
 4. **Atualizações de dados contínuas:** use a área **Meu perfil** para alterar informações, ativar/desativar alertas e enviar um novo currículo quando desejar. As alterações são persistidas no banco e refletem nas próximas sessões.
@@ -65,4 +67,4 @@ Certifique-se de possuir o Python 3 instalado e execute:
 python -m unittest discover tests
 ```
 
-Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (cadastro, perfil, vagas, contato), se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`), se o cabeçalho mantém o botão oficial de WhatsApp e se todos os formulários preservam os campos obrigatórios e restrições de arquivo. A suíte também garante que a tela de login possua o formulário correto e aponta para o cadastro, além de cobrir a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.
+Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (cadastro, perfil, vagas, contato), se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`), se o cabeçalho mantém o botão oficial de WhatsApp e se todos os formulários preservam os campos obrigatórios e restrições de arquivo. A suíte também garante que a tela de login ofereça as abas de acesso e cadastro, além de cobrir a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.

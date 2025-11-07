@@ -83,7 +83,6 @@ class TestSiteStructure(unittest.TestCase):
 
     def test_jobs_section_has_cards(self):
         cards = re.findall(r'class=\"job-card\"', HOME_CONTENT)
-        cards = re.findall(r'class=\"job-card\"', HTML_CONTENT)
         self.assertGreaterEqual(
             len(cards),
             4,
@@ -176,7 +175,7 @@ class TestSiteStructure(unittest.TestCase):
                 "O campo de alertas deve ser um checkbox para controlar as notificações.",
             )
 
-    def test_login_page_has_form_and_links(self):
+    def test_login_page_has_auth_tabs_and_forms(self):
         self.assertIsNotNone(
             re.search(r'id=\"login-form\"', LOGIN_CONTENT),
             msg="A página de login deve oferecer um formulário dedicado para candidatos cadastrados.",
@@ -187,11 +186,51 @@ class TestSiteStructure(unittest.TestCase):
         if login_password_field:
             self.assertIn('type="password"', login_password_field.group(0))
 
-        cadastro_link = re.search(r'href=\"home\.html#cadastro\"', LOGIN_CONTENT)
         self.assertIsNotNone(
-            cadastro_link,
-            "A página de login deve apontar para o fluxo de cadastro de currículos para novos usuários.",
+            re.search(r'id=\"register-form\"', LOGIN_CONTENT),
+            msg="Usuários sem cadastro precisam encontrar um formulário completo na página de login.",
         )
+
+        register_fields = {
+            'register-nome': r'id=\"register-nome\"',
+            'register-email': r'id=\"register-email\"',
+            'register-senha': r'id=\"register-senha\"',
+            'register-area': r'id=\"register-area\"',
+            'register-curriculo': r'id=\"register-curriculo\"',
+        }
+
+        for field, pattern in register_fields.items():
+            with self.subTest(register_field=field):
+                self.assertIsNotNone(
+                    re.search(pattern, LOGIN_CONTENT),
+                    msg=f"O campo '{field}' deve estar disponível no formulário de cadastro da página de login.",
+                )
+
+        register_password_field = re.search(r'<input[^>]*id=\"register-senha\"[^>]*>', LOGIN_CONTENT)
+        self.assertIsNotNone(register_password_field)
+        if register_password_field:
+            self.assertIn('type="password"', register_password_field.group(0))
+
+        file_accept_match = re.search(r'id=\"register-curriculo\"[^>]+accept=\"([^\"]+)\"', LOGIN_CONTENT)
+        self.assertIsNotNone(
+            file_accept_match,
+            msg="O cadastro inicial deve restringir os formatos do currículo enviado na tela de login.",
+        )
+        if file_accept_match:
+            accepted_formats = file_accept_match.group(1)
+            for expected in [".pdf", ".doc", ".docx"]:
+                self.assertIn(
+                    expected,
+                    accepted_formats,
+                    f"O campo de currículo inicial deve aceitar o formato {expected}.",
+                )
+
+        for view in ('login', 'register'):
+            with self.subTest(toggle=view):
+                self.assertIsNotNone(
+                    re.search(rf'data-auth-view=\"{view}\"', LOGIN_CONTENT),
+                    msg=f"A página de login precisa disponibilizar a aba '{view}' para alternar entre acesso e cadastro.",
+                )
 
     def test_login_page_header_has_whatsapp_cta(self):
         whatsapp_link = re.search(r'href=\"https://wa\.me/551135391330\"', LOGIN_CONTENT)

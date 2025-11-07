@@ -13,6 +13,7 @@
     --radius-sm: 12px;
     --radius-md: 18px;
     --radius-lg: 28px;
+    --radius-pill: 999px;
     --container-width: min(1120px, 92vw);
     --font-heading: 'Montserrat', sans-serif;
     --font-body: 'Open Sans', sans-serif;
@@ -762,6 +763,48 @@ h1 {
     gap: 1.5rem;
 }
 
+.auth-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-background);
+    padding: 0.4rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    gap: 0.4rem;
+}
+
+.auth-toggle__button {
+    border: none;
+    background: transparent;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-toggle__button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.auth-toggle__button.is-active {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.auth-pane {
+    display: none;
+    gap: 1.25rem;
+}
+
+.auth-pane.is-active {
+    display: grid;
+}
+
 .login__form {
     display: grid;
     gap: 1.25rem;
@@ -796,6 +839,43 @@ h1 {
 .login__recommendations-list a {
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.register__form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.register__feedback {
+    min-height: 1.5rem;
+    font-weight: 500;
+    color: var(--color-muted);
+}
+
+.register__hint,
+.register__privacy {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+}
+
+[data-register-file] {
+    color: var(--color-muted);
+    margin-top: 0.5rem;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--color-primary);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.link-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .talent {
