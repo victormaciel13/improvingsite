@@ -7,6 +7,8 @@
     --color-muted: #64748b;
     --color-text: #1e293b;
     --color-border: #e2e8f0;
+    --color-success: #16a34a;
+    --color-success-soft: rgba(22, 163, 74, 0.12);
     --color-accent: #f1f5f9;
     --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.08);
     --shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.12);
@@ -499,6 +501,39 @@ h1 {
     display: flex;
     gap: 0.8rem;
     flex-wrap: wrap;
+}
+
+.job-card__feedback {
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(22, 163, 74, 0.35);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.job-card--applied {
+    border-color: rgba(22, 163, 74, 0.55);
+    box-shadow: 0 16px 36px rgba(22, 163, 74, 0.16);
+}
+
+.job-card--applied .job-card__tag {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.job-card--applied [data-action="candidatar"] {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+.job-card--applied [data-action="candidatar"]:hover,
+.job-card--applied [data-action="candidatar"]:focus {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: #fff;
 }
 
 .testimonials {

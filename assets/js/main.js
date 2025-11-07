@@ -32,6 +32,7 @@ const API_ENDPOINT = '/api/candidates';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
+const APPLIED_JOBS_KEY = 'idealAppliedJobs';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
 function safeParseJSON(value, fallback) {
@@ -61,6 +62,26 @@ function getStoredProfile() {
 
 function saveProfile(profile) {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+function getAppliedJobs() {
+    try {
+        const stored = localStorage.getItem(APPLIED_JOBS_KEY);
+        const parsed = safeParseJSON(stored, []);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn('Não foi possível recuperar as vagas candidatas.', error);
+        return [];
+    }
+}
+
+function saveAppliedJobs(jobIds) {
+    try {
+        const unique = Array.from(new Set(jobIds));
+        localStorage.setItem(APPLIED_JOBS_KEY, JSON.stringify(unique));
+    } catch (error) {
+        console.warn('Não foi possível registrar as vagas candidatas.', error);
+    }
 }
 
 function rememberLoginEmail(email) {
@@ -131,6 +152,50 @@ function getAreaLabel(value) {
     }
     const option = profileAreaSelect?.querySelector(`option[value="${value}"]`);
     return option ? option.textContent : value;
+}
+
+function getJobFeedbackElement(jobId) {
+    if (!jobId) {
+        return null;
+    }
+    return document.querySelector(`[data-job-feedback="${jobId}"]`);
+}
+
+function updateJobApplicationUI(jobCard, jobId, jobTitle, alreadyApplied) {
+    if (!jobId) {
+        return;
+    }
+
+    const feedback = getJobFeedbackElement(jobId);
+    if (feedback) {
+        const normalizedTitle = jobTitle || 'esta vaga';
+        feedback.textContent = alreadyApplied
+            ? `Você já se inscreveu para ${normalizedTitle}. Seu currículo está em análise.`
+            : `Inscrição registrada para ${normalizedTitle}. Seu currículo está em análise.`;
+        feedback.hidden = false;
+    }
+
+    if (jobCard) {
+        jobCard.classList.add('job-card--applied');
+    }
+
+    const applyButton = jobCard?.querySelector('[data-action="candidatar"]');
+    if (applyButton) {
+        applyButton.classList.add('is-applied');
+        applyButton.textContent = 'Currículo em análise';
+    }
+}
+
+function restoreAppliedJobs() {
+    const appliedJobs = getAppliedJobs();
+    appliedJobs.forEach((jobId) => {
+        const jobCard = document.getElementById(jobId);
+        if (!jobCard) {
+            return;
+        }
+        const jobTitle = jobCard.querySelector('h3')?.textContent?.trim();
+        updateJobApplicationUI(jobCard, jobId, jobTitle, true);
+    });
 }
 
 function updateProfileUI(profile) {
@@ -208,6 +273,7 @@ if (!isSessionAuthenticated()) {
     window.location.replace('index.html');
 } else {
     initializeProfile();
+    restoreAppliedJobs();
 }
 
 async function sendCandidateData(formData) {
@@ -312,25 +378,20 @@ favoritoButtons.forEach((button) => {
 candidatarButtons.forEach((button) => {
     button.addEventListener('click', (event) => {
         event.preventDefault();
+        const jobCard = button.closest('.job-card');
+        const jobId = jobCard?.id || button.dataset.jobTarget?.replace('#', '');
+        const jobTitle = button.dataset.jobTitle || jobCard?.querySelector('h3')?.textContent?.trim();
+        const appliedJobs = getAppliedJobs();
+        const alreadyApplied = jobId ? appliedJobs.includes(jobId) : false;
 
-        const jobTargetSelector = button.dataset.jobTarget;
-        if (jobTargetSelector) {
-            const jobTarget = document.querySelector(jobTargetSelector);
-            if (jobTarget) {
-                jobTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        if (jobId && !alreadyApplied) {
+            appliedJobs.push(jobId);
+            saveAppliedJobs(appliedJobs);
         }
 
-        const cadastroSection = document.getElementById('cadastro');
-        if (cadastroSection && typeof cadastroSection.scrollIntoView === 'function') {
-            setTimeout(() => {
-                cadastroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
-        }
-
-        const firstTalentField = talentForm?.querySelector('input, select, textarea');
-        if (firstTalentField && typeof firstTalentField.focus === 'function') {
-            setTimeout(() => firstTalentField.focus(), 400);
+        updateJobApplicationUI(jobCard, jobId, jobTitle, alreadyApplied);
+        if (typeof button.blur === 'function') {
+            button.blur();
         }
     });
 });

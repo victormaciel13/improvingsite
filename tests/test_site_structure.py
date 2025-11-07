@@ -96,6 +96,28 @@ class TestSiteStructure(unittest.TestCase):
             "Todos os botões de candidatura devem direcionar usuários para a área de cadastro na própria página.",
         )
 
+    def test_job_cards_have_feedback_placeholder(self):
+        feedback_matches = list(
+            re.finditer(r'<p class=\"job-card__feedback\"[^>]*data-job-feedback=\"([^"]+)\"[^>]*>', HOME_CONTENT)
+        )
+        self.assertGreaterEqual(
+            len(feedback_matches),
+            4,
+            "Cada card de vaga precisa oferecer um espaço de mensagem para confirmar a candidatura do usuário.",
+        )
+
+        for match in feedback_matches:
+            job_id = match.group(1)
+            with self.subTest(job=job_id):
+                self.assertIn(
+                    f'id="{job_id}"',
+                    HOME_CONTENT,
+                    msg="O feedback de candidatura deve corresponder ao identificador de um card existente.",
+                )
+                self.assertIn('role="status"', match.group(0))
+                self.assertIn('aria-live="polite"', match.group(0))
+                self.assertIn('hidden', match.group(0))
+
     def test_assets_exist_and_not_empty(self):
         for asset in (CSS_PATH, MAIN_JS_PATH, LOGIN_JS_PATH):
             with self.subTest(asset=asset.name):
