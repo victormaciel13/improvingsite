@@ -118,6 +118,24 @@ class TestSiteStructure(unittest.TestCase):
                 self.assertIn('aria-live="polite"', match.group(0))
                 self.assertIn('hidden', match.group(0))
 
+    def test_virtual_assistant_chat_widget_present(self):
+        self.assertIsNotNone(
+            re.search(r'data-assistant-chat', HOME_CONTENT),
+            msg="A página inicial deve oferecer um assistente virtual para tirar dúvidas rápidas.",
+        )
+
+        self.assertIsNotNone(
+            re.search(r'data-assistant-launcher', HOME_CONTENT),
+            msg="O assistente precisa ter um botão lançador identificável.",
+        )
+
+        quick_actions = re.findall(r'data-assistant-question=\"([a-z-]+)\"', HOME_CONTENT)
+        self.assertGreaterEqual(
+            len(quick_actions),
+            3,
+            "O assistente virtual deve conter atalhos com perguntas frequentes para orientar os usuários.",
+        )
+
     def test_assets_exist_and_not_empty(self):
         for asset in (CSS_PATH, MAIN_JS_PATH, LOGIN_JS_PATH):
             with self.subTest(asset=asset.name):

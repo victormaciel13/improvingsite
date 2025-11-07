@@ -569,6 +569,37 @@
         </section>
     </main>
 
+    <div class="assistant-chat" data-assistant-chat>
+        <button class="assistant-chat__launcher" type="button" data-assistant-launcher aria-controls="assistente-ideal" aria-expanded="false">
+            <span class="assistant-chat__launcher-icon" aria-hidden="true">🤖</span>
+            <span class="assistant-chat__launcher-text">Precisa de ajuda?</span>
+        </button>
+        <section class="assistant-chat__window" id="assistente-ideal" data-assistant-window aria-hidden="true" aria-label="Assistente virtual da Ideal Empregos">
+            <header class="assistant-chat__header">
+                <div>
+                    <p class="assistant-chat__title">Assistente Ideal</p>
+                    <p class="assistant-chat__subtitle">Estamos prontos para tirar suas dúvidas</p>
+                </div>
+                <button class="assistant-chat__close" type="button" data-assistant-close aria-label="Fechar chat">
+                    ✕
+                </button>
+            </header>
+            <div class="assistant-chat__body">
+                <ul class="assistant-chat__messages" data-assistant-messages aria-live="polite"></ul>
+                <div class="assistant-chat__quick-actions" aria-label="Perguntas frequentes">
+                    <button type="button" data-assistant-question="cadastro">Como faço meu cadastro?</button>
+                    <button type="button" data-assistant-question="recomendacoes">Receberei vagas recomendadas?</button>
+                    <button type="button" data-assistant-question="curriculo">Posso atualizar meu currículo?</button>
+                </div>
+            </div>
+            <form class="assistant-chat__form" data-assistant-form>
+                <label class="sr-only" for="assistant-chat-input">Digite sua mensagem</label>
+                <input id="assistant-chat-input" data-assistant-input type="text" name="mensagem" placeholder="Escreva sua dúvida aqui" autocomplete="off">
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+    </div>
+
     <footer class="site-footer">
         <div class="container footer__grid">
             <div>

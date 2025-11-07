@@ -21,6 +21,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - **Área “Meu perfil”** para revisar informações salvas, ajustar alertas, enviar um novo currículo e trocar a senha com regras mínimas de segurança.
 - **Destaque automático de vagas** relacionadas à área do candidato autenticado, facilitando o início das candidaturas.
 - **Mensagens de feedback acessíveis** em todos os formulários para orientar o usuário em casos de erro ou sucesso.
+- **Assistente virtual** com chat fixo no canto inferior direito oferecendo respostas rápidas sobre cadastro, vagas e canais de atendimento.
 
 ## Fluxo inicial de acesso
 1. **Acesso ao login:** ao abrir `http://localhost:<porta>/` o usuário é direcionado para `index.html`, que exibe abas para entrar com uma conta existente ou criar um novo acesso.
@@ -67,4 +68,4 @@ Certifique-se de possuir o Python 3 instalado e execute:
 python -m unittest discover tests
 ```
 
-Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (cadastro, perfil, vagas, contato), se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`), se o cabeçalho mantém o botão oficial de WhatsApp e se todos os formulários preservam os campos obrigatórios e restrições de arquivo. A suíte também garante que a tela de login ofereça as abas de acesso e cadastro, além de cobrir a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.
+Os testes verificam se as seções principais da landing page autenticada permanecem disponíveis (cadastro, perfil, vagas, contato), se os arquivos de estilos e scripts existem (incluindo `assets/js/login.js`), se o cabeçalho mantém o botão oficial de WhatsApp e se todos os formulários preservam os campos obrigatórios e restrições de arquivo. A suíte também garante que a tela de login ofereça as abas de acesso e cadastro, valida a presença do assistente virtual na home e cobre a camada de persistência para assegurar o armazenamento consistente dos currículos no SQLite.

@@ -577,3 +577,164 @@ revealElements.forEach((element) => {
     element.classList.add('will-animate');
     observer.observe(element);
 });
+
+const assistantChat = document.querySelector('[data-assistant-chat]');
+const assistantLauncher = assistantChat?.querySelector('[data-assistant-launcher]');
+const assistantWindow = assistantChat?.querySelector('[data-assistant-window]');
+const assistantClose = assistantChat?.querySelector('[data-assistant-close]');
+const assistantMessages = assistantChat?.querySelector('[data-assistant-messages]');
+const assistantForm = assistantChat?.querySelector('[data-assistant-form]');
+const assistantInput = assistantChat?.querySelector('[data-assistant-input]');
+const assistantQuickActions = assistantChat?.querySelectorAll('[data-assistant-question]');
+let assistantHasWelcomed = false;
+
+const assistantAnswers = [
+    {
+        triggers: ['cadastro', 'registrar', 'inscrever', 'conta'],
+        response:
+            'Para se cadastrar, acesse a seção “Cadastre seu currículo”, preencha seus dados, anexe o currículo e escolha se deseja receber alertas. Assim que salvar, você poderá acompanhar tudo na área "Meu perfil".',
+    },
+    {
+        triggers: ['recomendacoes', 'recomendação', 'recomendado', 'alerta', 'novas vagas', 'newsletter'],
+        response:
+            'Depois de fazer login, destacamos vagas alinhadas ao seu perfil e enviamos alertas por e-mail quando você ativa essa opção no cadastro.',
+    },
+    {
+        triggers: ['curriculo', 'currículo', 'atualizar', 'documento'],
+        response:
+            'Você pode atualizar currículo, dados pessoais e preferências acessando a seção "Meu perfil". Basta enviar o novo arquivo e salvar para manter tudo em dia.',
+    },
+    {
+        triggers: ['login', 'senha', 'acesso'],
+        response:
+            'Se esqueceu a senha, refaça o cadastro usando o mesmo e-mail com uma nova senha. Continuamos protegendo seus dados com criptografia e você recupera o acesso imediatamente.',
+    },
+    {
+        triggers: ['contato', 'whatsapp', 'telefone'],
+        response:
+            'Nosso time está disponível pelo WhatsApp (11) 3539-1330 e pelo formulário de contato. Envie sua mensagem e retornaremos rapidamente.',
+    },
+];
+
+const quickPrompts = {
+    cadastro: {
+        question: 'Como faço meu cadastro?',
+        response:
+            'Para se cadastrar, clique na seção “Cadastre seu currículo”, informe seus dados, defina uma senha e anexe o currículo. Em seguida, você já pode acompanhar tudo em "Meu perfil".',
+    },
+    recomendacoes: {
+        question: 'Receberei vagas recomendadas?',
+        response:
+            'Sim! Assim que entrar na plataforma autenticado, destacamos vagas alinhadas à sua área e enviamos alertas por e-mail quando essa opção está ativada.',
+    },
+    curriculo: {
+        question: 'Posso atualizar meu currículo?',
+        response:
+            'Claro. Abra "Meu perfil", envie um novo currículo e salve as alterações. O arquivo anterior é substituído com segurança e você mantém o histórico atualizado.',
+    },
+};
+
+function getAssistantReply(message) {
+    if (!message) {
+        return 'Posso ajudar com cadastro, vagas recomendadas, atualizações de currículo ou dúvidas sobre o contato da Ideal Empregos.';
+    }
+
+    const normalized = message.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    const knowledge = assistantAnswers.find((entry) =>
+        entry.triggers.some((trigger) => normalized.includes(trigger.normalize('NFD').replace(/\p{Diacritic}/gu, '')))
+    );
+
+    return (
+        knowledge?.response ??
+        'Ainda não entendi totalmente, mas nosso formulário de contato e o WhatsApp (11) 3539-1330 estão à disposição para qualquer dúvida específica.'
+    );
+}
+
+function appendAssistantMessage(role, text) {
+    if (!assistantMessages || !text) {
+        return;
+    }
+
+    const item = document.createElement('li');
+    const bubble = document.createElement('div');
+    const bubbleRole = role === 'user' ? 'user' : 'assistant';
+    item.classList.add('assistant-chat__message');
+    bubble.classList.add('assistant-chat__bubble', `assistant-chat__bubble--${bubbleRole}`);
+    bubble.textContent = text;
+    item.appendChild(bubble);
+    assistantMessages.appendChild(item);
+    assistantMessages.scrollTop = assistantMessages.scrollHeight;
+}
+
+function setAssistantOpen(isOpen) {
+    if (!assistantChat || !assistantWindow || !assistantLauncher) {
+        return;
+    }
+
+    assistantChat.classList.toggle('assistant-chat--open', isOpen);
+    assistantWindow.setAttribute('aria-hidden', String(!isOpen));
+
+    if (isOpen) {
+        assistantWindow.removeAttribute('hidden');
+        assistantLauncher.setAttribute('aria-expanded', 'true');
+        if (!assistantHasWelcomed) {
+            appendAssistantMessage('assistant', 'Olá! Sou o assistente virtual da Ideal Empregos. Como posso ajudar hoje?');
+            assistantHasWelcomed = true;
+        }
+        setTimeout(() => assistantInput?.focus(), 50);
+    } else {
+        assistantWindow.setAttribute('hidden', '');
+        assistantLauncher.setAttribute('aria-expanded', 'false');
+    }
+}
+
+assistantWindow?.setAttribute('hidden', '');
+
+assistantLauncher?.addEventListener('click', () => {
+    const isOpen = assistantChat?.classList.contains('assistant-chat--open');
+    setAssistantOpen(!isOpen);
+});
+
+assistantClose?.addEventListener('click', () => setAssistantOpen(false));
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && assistantChat?.classList.contains('assistant-chat--open')) {
+        setAssistantOpen(false);
+        assistantLauncher?.focus();
+    }
+});
+
+assistantForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const value = assistantInput?.value?.trim();
+
+    if (!value) {
+        return;
+    }
+
+    appendAssistantMessage('user', value);
+    assistantInput.value = '';
+
+    const reply = getAssistantReply(value);
+    setTimeout(() => {
+        appendAssistantMessage('assistant', reply);
+    }, 200);
+});
+
+assistantQuickActions?.forEach((button) => {
+    button.addEventListener('click', () => {
+        const key = button.dataset.assistantQuestion;
+        const prompt = key ? quickPrompts[key] : null;
+        const question = prompt?.question ?? button.textContent ?? '';
+        const response = prompt?.response ?? getAssistantReply(question);
+
+        setAssistantOpen(true);
+        if (question) {
+            appendAssistantMessage('user', question);
+        }
+
+        setTimeout(() => {
+            appendAssistantMessage('assistant', response);
+        }, 150);
+    });
+});
