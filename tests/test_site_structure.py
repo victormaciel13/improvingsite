@@ -60,6 +60,13 @@ class TestSiteStructure(unittest.TestCase):
                 header_cta.group(1),
                 "#cadastro",
                 "O botão principal do cabeçalho deve direcionar para a seção de cadastro.",
+    def test_whatsapp_cta_link(self):
+        match = re.search(r'href=\"(https://wa\.me/[^\"]+)\"', HTML_CONTENT)
+        self.assertIsNotNone(match, "Deve existir um link para contato via WhatsApp.")
+        if match:
+            self.assertTrue(
+                match.group(1).startswith("https://wa.me/"),
+                "O link do WhatsApp deve utilizar o domínio oficial wa.me.",
             )
 
     def test_navigation_targets_existing_sections(self):

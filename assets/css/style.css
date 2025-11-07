@@ -256,6 +256,12 @@ h1 {
     color: var(--color-primary);
 }
 
+.btn--whatsapp {
+    background: #25d366;
+    color: #fff;
+    gap: 0.5rem;
+}
+
 .hero__metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
