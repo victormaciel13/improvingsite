@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Empregos | Conectamos talentos e empresas</title>
+    <meta name="description" content="Ideal Empregos conecta talentos às melhores oportunidades do mercado com atendimento humanizado e tecnologia inteligente.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="auth-locked">
+    <header class="site-header" id="topo">
+        <div class="container header__inner">
+            <a class="brand" href="#topo" aria-label="Ideal Empregos">
+                <span class="brand__icon" aria-hidden="true">IE</span>
+                <span class="brand__text">Ideal Empregos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação principal">
+                <button class="main-nav__toggle" aria-expanded="false" aria-controls="menu-principal">
+                    <span class="sr-only">Abrir menu</span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul id="menu-principal">
+                    <li><a href="#sobre">Sobre</a></li>
+                    <li><a href="#servicos">Serviços</a></li>
+                    <li><a href="#vagas">Vagas</a></li>
+                    <li><a href="#perfil">Meu perfil</a></li>
+                    <li><a href="#processo">Como funciona</a></li>
+                    <li><a href="#contato">Contato</a></li>
+                    <li class="main-nav__cta"><a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="login login--gate" id="login" aria-labelledby="login-title">
+            <div class="container login__grid">
+                <div class="login__intro">
+                    <p class="tag">Acesse para desbloquear o conteúdo</p>
+                    <h2 id="login-title">Faça login para descobrir tudo que a Ideal Empregos oferece</h2>
+                    <p>Ao entrar, você verá nossas vagas em destaque, serviços especializados, depoimentos e poderá atualizar todo o seu cadastro em poucos cliques.</p>
+                    <ul class="login__benefits">
+                        <li>Acompanhe candidaturas e alertas personalizados</li>
+                        <li>Veja recomendações de vagas sob medida para o seu perfil</li>
+                        <li>Atualize seus dados e currículo quando quiser</li>
+                    </ul>
+                </div>
+                <div class="login__panel">
+                    <form class="login__form" id="login-form" novalidate>
+                        <div class="form__field">
+                            <label for="login-email">E-mail cadastrado</label>
+                            <input type="email" id="login-email" name="email" placeholder="seuemail@exemplo.com" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="login-senha">Senha</label>
+                            <input type="password" id="login-senha" name="senha" placeholder="Sua senha" minlength="6" required>
+                            <p class="form__hint">É a mesma senha criada no cadastro de currículo.</p>
+                        </div>
+                        <button class="btn btn--primary" type="submit">Entrar</button>
+                        <p class="login__feedback" role="status" aria-live="polite"></p>
+                    </form>
+                    <div class="login__recommendations" hidden>
+                        <h3>Vagas recomendadas para você</h3>
+                        <p>Confira oportunidades alinhadas à sua área de atuação. Atualize o perfil para refinar as sugestões.</p>
+                        <ul class="login__recommendations-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="container hero__content">
+                <div>
+                    <p class="tag">Plataforma completa de recrutamento</p>
+                    <h1 id="hero-title">Conectamos profissionais e empresas com eficiência e cuidado humano</h1>
+                    <p class="hero__subtitle">O Ideal Empregos combina tecnologia inteligente e consultores especializados para acelerar contratações e impulsionar carreiras.</p>
+                    <div class="hero__actions">
+                        <a class="btn btn--primary" href="#vagas">Buscar vagas</a>
+                        <a class="btn btn--ghost" href="#sobre">Conheça a plataforma</a>
+                    </div>
+                    <ul class="hero__metrics" aria-label="Indicadores da Ideal Empregos">
+                        <li>
+                            <strong>+4k</strong>
+                            <span>Profissionais contratados</span>
+                        </li>
+                        <li>
+                            <strong>97%</strong>
+                            <span>Clientes satisfeitos</span>
+                        </li>
+                        <li>
+                            <strong>120</strong>
+                            <span>Empresas parceiras</span>
+                        </li>
+                    </ul>
+                </div>
+                <figure class="hero__image">
+                    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80" alt="Equipe de recrutamento colaborando em um escritório moderno">
+                    <figcaption>Recrutamento humanizado com tecnologia de ponta.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section class="partners" aria-label="Empresas parceiras">
+            <div class="container">
+                <p class="partners__title">Empresas que confiam na Ideal Empregos</p>
+                <ul class="partners__logos">
+                    <li>AtlasTech</li>
+                    <li>Grupo Horizonte</li>
+                    <li>Nova Fase</li>
+                    <li>ClinPrime</li>
+                    <li>AlphaLog</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="about" id="sobre">
+            <div class="container about__grid">
+                <div>
+                    <h2>Mais do que uma agência de empregos, um parceiro estratégico</h2>
+                    <p>Atuamos há mais de 12 anos conectando talentos às melhores oportunidades do mercado. Unimos análise de dados, consultores especializados e uma rede de empresas parceiras para garantir contratações eficientes e duradouras.</p>
+                    <p>Do primeiro contato à integração, apoiamos candidatos e empresas com conteúdo, mentorias e acompanhamento dedicado.</p>
+                    <div class="about__highlights">
+                        <article>
+                            <h3>Atendimento consultivo</h3>
+                            <p>Time de especialistas acompanha cada etapa da jornada, garantindo feedbacks constantes e segurança para tomar decisões.</p>
+                        </article>
+                        <article>
+                            <h3>Tecnologia inteligente</h3>
+                            <p>Algoritmos analisam skills, fit cultural e histórico profissional para indicar vagas com alta assertividade.</p>
+                        </article>
+                    </div>
+                </div>
+                <div class="card card--accent">
+                    <h3>Por que empresas nos escolhem</h3>
+                    <ul>
+                        <li>Redução média de 45% no tempo de contratação</li>
+                        <li>Banco ativo com mais de 80 mil currículos validados</li>
+                        <li>Consultores especializados por segmento</li>
+                        <li>Suporte completo em employer branding</li>
+                    </ul>
+                    <a class="btn btn--primary" href="#contato">Quero contratar</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="services" id="servicos">
+            <div class="container">
+                <h2>Serviços que impulsionam contratações</h2>
+                <div class="services__grid">
+                    <article class="service-card">
+                        <span class="service-card__icon" aria-hidden="true">🔍</span>
+                        <h3>Recrutamento &amp; Seleção</h3>
+                        <p>Processos personalizados e rápidos com entrevistas por competências, testes técnicos e análise comportamental.</p>
+                        <a class="service-card__link" href="#contato">Solicitar proposta</a>
+                    </article>
+                    <article class="service-card">
+                        <span class="service-card__icon" aria-hidden="true">🤝</span>
+                        <h3>Consultoria de RH</h3>
+                        <p>Diagnóstico de clima, estruturação de cargos &amp; salários, on-boarding e programas de desenvolvimento contínuo.</p>
+                        <a class="service-card__link" href="#contato">Conversar com especialista</a>
+                    </article>
+                    <article class="service-card">
+                        <span class="service-card__icon" aria-hidden="true">🎯</span>
+                        <h3>Employer Branding</h3>
+                        <p>Construímos narrativas de marca empregadora, campanhas digitais e páginas de carreiras que atraem talentos.</p>
+                        <a class="service-card__link" href="#contato">Planejar estratégia</a>
+                    </article>
+                    <article class="service-card">
+                        <span class="service-card__icon" aria-hidden="true">📊</span>
+                        <h3>Outsourcing de talentos</h3>
+                        <p>Alocação de profissionais altamente qualificados com gestão operacional e suporte jurídico completo.</p>
+                        <a class="service-card__link" href="#contato">Saber mais</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="jobs" id="vagas">
+            <div class="container jobs__header">
+                <div>
+                    <h2>Vagas em destaque</h2>
+                    <p>Atualizamos diariamente oportunidades em diversas áreas. Use os filtros para encontrar vagas alinhadas ao seu perfil.</p>
+                </div>
+                <div class="jobs__filters" aria-label="Filtrar vagas">
+                    <label>
+                        <span class="sr-only">Filtrar por área</span>
+                        <select id="filtro-area">
+                            <option value="todos">Todas as áreas</option>
+                            <option value="tecnologia">Tecnologia</option>
+                            <option value="saude">Saúde</option>
+                            <option value="financeiro">Financeiro</option>
+                            <option value="marketing">Marketing</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span class="sr-only">Filtrar por modalidade</span>
+                        <select id="filtro-modalidade">
+                            <option value="todas">Todas as modalidades</option>
+                            <option value="presencial">Presencial</option>
+                            <option value="remoto">Remoto</option>
+                            <option value="hibrido">Híbrido</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="container jobs__grid" role="list">
+                <article class="job-card" id="vaga-tecnologia-fullstack" data-area="tecnologia" data-modalidade="remoto" role="listitem">
+                    <header>
+                        <span class="job-card__tag">Remoto</span>
+                        <h3>Desenvolvedor(a) Full Stack</h3>
+                        <p class="job-card__company">AtlasTech • Brasil</p>
+                    </header>
+                    <p>Atuação com JavaScript, Node.js e React em plataforma SaaS global. Plano de carreira e benefícios flexíveis.</p>
+                    <ul>
+                        <li>CLT • Faixa salarial: R$ 12k - R$ 15k</li>
+                        <li>Inglês avançado</li>
+                    </ul>
+                    <div class="job-card__actions">
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Desenvolvedor(a) Full Stack" data-job-target="#vaga-tecnologia-fullstack">Quero me candidatar</a>
+                        <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
+                    </div>
+                </article>
+                <article class="job-card" id="vaga-saude-coordenacao" data-area="saude" data-modalidade="presencial" role="listitem">
+                    <header>
+                        <span class="job-card__tag">Presencial</span>
+                        <h3>Coordenador(a) de Enfermagem</h3>
+                        <p class="job-card__company">ClinPrime • São Paulo</p>
+                    </header>
+                    <p>Gestão de equipe multidisciplinar em hospital referência, implementação de protocolos e indicadores assistenciais.</p>
+                    <ul>
+                        <li>CLT • Faixa salarial: R$ 8k - R$ 10k</li>
+                        <li>Especialização em gestão hospitalar</li>
+                    </ul>
+                    <div class="job-card__actions">
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Coordenador(a) de Enfermagem" data-job-target="#vaga-saude-coordenacao">Quero me candidatar</a>
+                        <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
+                    </div>
+                </article>
+                <article class="job-card" id="vaga-financeiro-analista" data-area="financeiro" data-modalidade="hibrido" role="listitem">
+                    <header>
+                        <span class="job-card__tag">Híbrido</span>
+                        <h3>Analista Financeiro Sênior</h3>
+                        <p class="job-card__company">Grupo Horizonte • Belo Horizonte</p>
+                    </header>
+                    <p>Responsável por budget, forecasting e modelagem financeira. Contato com diretoria e participação em projetos estratégicos.</p>
+                    <ul>
+                        <li>CLT • Faixa salarial: R$ 9k - R$ 11k</li>
+                        <li>Excel avançado e Power BI</li>
+                    </ul>
+                    <div class="job-card__actions">
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Analista Financeiro Sênior" data-job-target="#vaga-financeiro-analista">Quero me candidatar</a>
+                        <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
+                    </div>
+                </article>
+                <article class="job-card" id="vaga-marketing-growth" data-area="marketing" data-modalidade="remoto" role="listitem">
+                    <header>
+                        <span class="job-card__tag">Remoto</span>
+                        <h3>Especialista em Growth Marketing</h3>
+                        <p class="job-card__company">Nova Fase • Curitiba</p>
+                    </header>
+                    <p>Estratégia de aquisição multicanal, CRO e campanhas de performance. Trabalho integrado com time de produto.</p>
+                    <ul>
+                        <li>PJ • Faixa salarial: R$ 7k - R$ 9k</li>
+                        <li>Experiência com marketing de produto</li>
+                    </ul>
+                    <div class="job-card__actions">
+                        <a class="btn btn--ghost" href="#login" data-action="candidatar" data-job-title="Especialista em Growth Marketing" data-job-target="#vaga-marketing-growth">Quero me candidatar</a>
+                        <button class="btn btn--secondary" data-action="favorito" aria-pressed="false">Salvar vaga</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="talent" id="cadastro" aria-labelledby="cadastro-title">
+            <div class="container talent__grid">
+                <div class="talent__content">
+                    <p class="tag">Banco de talentos</p>
+                    <h2 id="cadastro-title">Cadastre seu currículo e receba alertas personalizados</h2>
+                    <p>Fortaleça sua jornada profissional compartilhando seu perfil com nossos consultores. Avisamos por e-mail sempre que surgir uma oportunidade alinhada ao seu interesse.</p>
+                    <ul class="talent__highlights">
+                        <li>Match inteligente com vagas recém-publicadas</li>
+                        <li>Acompanhamento individual com especialistas de carreira</li>
+                        <li>Convites prioritários para eventos e mentorias exclusivas</li>
+                    </ul>
+                </div>
+                <form class="talent__form" id="talent-form" enctype="multipart/form-data" novalidate>
+                    <fieldset>
+                        <legend>Dados do candidato</legend>
+                        <div class="form__field">
+                            <label for="talent-nome">Nome completo</label>
+                            <input type="text" id="talent-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-email">E-mail</label>
+                            <input type="email" id="talent-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-senha">Crie uma senha</label>
+                            <input type="password" id="talent-senha" name="senha" placeholder="Mínimo de 6 caracteres" minlength="6" required>
+                            <p class="form__hint">Use esta senha para fazer login e acompanhar suas recomendações.</p>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-telefone">Telefone</label>
+                            <input type="tel" id="talent-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-area">Área de interesse</label>
+                            <select id="talent-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-curriculo">Currículo (PDF ou DOC)</label>
+                            <input type="file" id="talent-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf" required>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="talent-alertas" name="alertas" value="sim" checked>
+                            <label for="talent-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--primary" type="submit">Enviar currículo</button>
+                    <p class="talent__feedback" role="status" aria-live="polite"></p>
+                    <p class="talent__privacy">Mantemos seus dados seguros e você pode atualizar o cadastro sempre que desejar.</p>
+                </form>
+            </div>
+        </section>
+
+        <section class="profile" id="perfil" aria-labelledby="perfil-title">
+            <div class="container profile__grid">
+                <div class="profile__summary">
+                    <p class="tag">Minha conta</p>
+                    <h2 id="perfil-title">Acompanhe e atualize seu cadastro</h2>
+                    <p>Gerencie seus dados profissionais, mantenha o currículo em dia e escolha como deseja receber novidades da Ideal Empregos.</p>
+                    <dl class="profile__details">
+                        <div>
+                            <dt>Nome</dt>
+                            <dd data-profile-field="nome">Cadastre-se para preencher seu perfil.</dd>
+                        </div>
+                        <div>
+                            <dt>E-mail</dt>
+                            <dd data-profile-field="email">—</dd>
+                        </div>
+                        <div>
+                            <dt>Telefone</dt>
+                            <dd data-profile-field="telefone">—</dd>
+                        </div>
+                        <div>
+                            <dt>Área de interesse</dt>
+                            <dd data-profile-field="area">—</dd>
+                        </div>
+                        <div>
+                            <dt>Alertas por e-mail</dt>
+                            <dd data-profile-field="alertas">—</dd>
+                        </div>
+                    </dl>
+                    <p class="profile__note">Última atualização: <span data-profile-field="atualizado">Nenhum cadastro encontrado</span></p>
+                </div>
+                <form class="profile__form" id="profile-form" enctype="multipart/form-data" novalidate>
+                    <fieldset>
+                        <legend>Atualize seus dados</legend>
+                        <div class="form__field">
+                            <label for="profile-nome">Nome completo</label>
+                            <input type="text" id="profile-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-email">E-mail</label>
+                            <input type="email" id="profile-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-telefone">Telefone</label>
+                            <input type="tel" id="profile-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-area">Área de interesse</label>
+                            <select id="profile-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-senha">Atualizar senha (opcional)</label>
+                            <input type="password" id="profile-senha" name="senha" placeholder="Digite uma nova senha" minlength="6">
+                            <p class="form__hint">Preencha apenas se desejar alterar sua senha atual.</p>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-curriculo">Atualizar currículo (opcional)</label>
+                            <input type="file" id="profile-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf">
+                            <p class="profile__file" role="status" aria-live="polite">Currículo atual: <span data-profile-file>Nenhum arquivo cadastrado</span></p>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="profile-alertas" name="alertas" value="sim">
+                            <label for="profile-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--secondary" type="submit">Salvar alterações</button>
+                    <p class="profile__feedback" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+
+        <section class="testimonials" aria-labelledby="depoimentos-title">
+            <div class="container">
+                <h2 id="depoimentos-title">Histórias reais de sucesso</h2>
+                <div class="testimonials__grid">
+                    <figure>
+                        <blockquote>
+                            “O time da Ideal Empregos trouxe candidatos alinhados ao nosso propósito em tempo recorde. Hoje contratamos de forma muito mais estratégica.”
+                        </blockquote>
+                        <figcaption>
+                            <strong>Fernanda Lima</strong>
+                            <span>Diretora de RH, ClinPrime</span>
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <blockquote>
+                            “Recebi feedbacks constantes e orientações para entrevistas. Em menos de um mês conquistei a vaga dos meus sonhos.”
+                        </blockquote>
+                        <figcaption>
+                            <strong>Marcelo Alves</strong>
+                            <span>Product Manager</span>
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <blockquote>
+                            “A consultoria nos ajudou a estruturar carreira e retenção. A satisfação interna aumentou significativamente.”
+                        </blockquote>
+                        <figcaption>
+                            <strong>Ana Paula Souza</strong>
+                            <span>Head de Pessoas, AtlasTech</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="process" id="processo" aria-labelledby="processo-title">
+            <div class="container process__content">
+                <div>
+                    <h2 id="processo-title">Como funcionam nossos processos</h2>
+                    <p>Combinamos metodologia ágil e tecnologia proprietária para garantir contratações assertivas, transparentes e humanizadas.</p>
+                    <ul class="steps">
+                        <li>
+                            <span class="steps__number">1</span>
+                            <div>
+                                <h3>Alinhamento de expectativas</h3>
+                                <p>Entendimento detalhado da cultura da empresa e objetivos de carreira do candidato.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="steps__number">2</span>
+                            <div>
+                                <h3>Mapeamento inteligente</h3>
+                                <p>Triagem automatizada, entrevistas humanizadas e testes técnicos elaborados com especialistas.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="steps__number">3</span>
+                            <div>
+                                <h3>Encaminhamento e integração</h3>
+                                <p>Apresentação de shortlist com relatórios completos e apoio no onboarding para garantir sucesso.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card card--shadow faq">
+                    <h3>Perguntas frequentes</h3>
+                    <details>
+                        <summary>Quanto tempo leva para preencher uma vaga?</summary>
+                        <p>O tempo médio é de 15 a 25 dias, variando conforme a senioridade e especificidades da vaga.</p>
+                    </details>
+                    <details>
+                        <summary>Quais segmentos atendem?</summary>
+                        <p>Atuamos em tecnologia, saúde, financeiro, marketing, indústria e setores administrativos.</p>
+                    </details>
+                    <details>
+                        <summary>Há custo para candidatos?</summary>
+                        <p>Não. Nosso serviço é 100% gratuito para candidatos, que ainda contam com conteúdos exclusivos e mentorias.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <section class="insights" aria-labelledby="insights-title">
+            <div class="container insights__grid">
+                <div>
+                    <h2 id="insights-title">Insights e recursos gratuitos</h2>
+                    <p>Conteúdos exclusivos sobre gestão de talentos, tendências de mercado e boas práticas de recrutamento.</p>
+                    <a class="btn btn--primary" href="#newsletter">Receber novidades</a>
+                </div>
+                <article class="insight-card">
+                    <span class="insight-card__category">Guia prático</span>
+                    <h3>Como estruturar um processo seletivo inclusivo</h3>
+                    <p>Checklist para empresas que buscam ampliar diversidade com práticas de recrutamento e seleção mais justas.</p>
+                    <a href="#" class="insight-card__link">Baixar material</a>
+                </article>
+                <article class="insight-card">
+                    <span class="insight-card__category">Podcast</span>
+                    <h3>Liderança humanizada: tendências para 2024</h3>
+                    <p>Conversamos com especialistas em RH sobre os desafios de engajar times híbridos e remotos.</p>
+                    <a href="#" class="insight-card__link">Ouvir episódio</a>
+                </article>
+            </div>
+        </section>
+
+        <section class="newsletter" id="newsletter">
+            <div class="container newsletter__content">
+                <div>
+                    <h2>Receba vagas e conteúdos exclusivos</h2>
+                    <p>Cadastre-se para receber oportunidades alinhadas ao seu perfil e materiais que ajudam a evoluir na carreira.</p>
+                </div>
+                <form class="newsletter__form" novalidate>
+                    <label for="newsletter-nome" class="sr-only">Nome</label>
+                    <input id="newsletter-nome" name="nome" type="text" placeholder="Seu nome" required>
+                    <label for="newsletter-email" class="sr-only">E-mail</label>
+                    <input id="newsletter-email" name="email" type="email" placeholder="Seu melhor e-mail" required>
+                    <button class="btn btn--primary" type="submit">Quero receber</button>
+                    <p class="newsletter__feedback" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+
+        <section class="contact" id="contato">
+            <div class="container contact__grid">
+                <div>
+                    <h2>Fale com nosso time</h2>
+                    <p>Preencha o formulário ou cadastre seu currículo para iniciar seu processo de contratação ou candidatura.</p>
+                    <ul class="contact__details">
+                        <li>
+                            <span aria-hidden="true">📍</span>
+                            <div>
+                                <strong>Endereço</strong>
+                                <span>Av. Paulista, 1000 - São Paulo/SP</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span aria-hidden="true">📞</span>
+                            <div>
+                                <strong>Telefone</strong>
+                                <a href="tel:+551133445566">+55 (11) 3344-5566</a>
+                            </div>
+                        </li>
+                        <li>
+                            <span aria-hidden="true">⏰</span>
+                            <div>
+                                <strong>Horário de atendimento</strong>
+                                <span>Segunda a sexta, 9h às 18h</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <a class="btn btn--primary" href="#cadastro" aria-label="Ir para a seção de cadastro de talentos">
+                        <span aria-hidden="true">📝</span>
+                        Atualizar meu cadastro
+                    </a>
+                </div>
+                <form class="contact__form" novalidate>
+                    <div class="form__group">
+                        <label for="nome">Nome completo</label>
+                        <input type="text" id="nome" name="nome" placeholder="Ex.: Ana Silva" required>
+                    </div>
+                    <div class="form__group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required>
+                    </div>
+                    <div class="form__group">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="form__group">
+                        <label for="interesse">Sou</label>
+                        <select id="interesse" name="interesse">
+                            <option value="candidato">Profissional em busca de vaga</option>
+                            <option value="empresa">Empresa buscando talentos</option>
+                            <option value="parceria">Parceiro ou fornecedor</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="mensagem">Mensagem</label>
+                        <textarea id="mensagem" name="mensagem" rows="4" placeholder="Conte-nos como podemos ajudar"></textarea>
+                    </div>
+                    <button class="btn btn--primary" type="submit">Enviar mensagem</button>
+                    <p class="form__feedback" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer__grid">
+            <div>
+                <a class="brand brand--footer" href="#topo" aria-label="Ideal Empregos">
+                    <span class="brand__icon" aria-hidden="true">IE</span>
+                    <span class="brand__text">Ideal Empregos</span>
+                </a>
+                <p>Ideal Empregos - Cuidando de pessoas e construindo equipes de alto desempenho.</p>
+                <p class="footer__legal">CNPJ 12.345.678/0001-90 • Todos os direitos reservados.</p>
+            </div>
+            <div>
+                <h3>Links úteis</h3>
+                <ul>
+                    <li><a href="#sobre">Sobre</a></li>
+                    <li><a href="#servicos">Serviços</a></li>
+                    <li><a href="#vagas">Vagas</a></li>
+                    <li><a href="#cadastro">Cadastre seu currículo</a></li>
+                    <li><a href="#perfil">Meu perfil</a></li>
+                    <li><a href="#processo">Processo</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3>Para empresas</h3>
+                <ul>
+                    <li><a href="#contato">Solicite uma proposta</a></li>
+                    <li><a href="#insights-title">Materiais gratuitos</a></li>
+                    <li><a href="#newsletter">Newsletter</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <h3>Siga a Ideal Empregos</h3>
+                <ul>
+                    <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
+                    <li><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+                    <li><a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <button class="back-to-top" type="button" aria-label="Voltar ao topo">
+            ↑
+        </button>
+    </footer>
+
+    <script src="assets/js/main.js" defer></script>
+</body>
+</html>
