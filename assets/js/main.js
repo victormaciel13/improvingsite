@@ -25,8 +25,9 @@ const profileFileDisplay = document.querySelector('[data-profile-file]');
 const profileAlertsToggle = document.getElementById('profile-alertas');
 const profileAreaSelect = document.getElementById('profile-area');
 const profileResumeInput = document.getElementById('profile-curriculo');
+const talentAlertsToggle = document.getElementById('talent-alertas');
 
-const TALENT_STORAGE_KEY = 'idealTalents';
+const API_ENDPOINT = '/api/candidates';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
@@ -57,6 +58,21 @@ function getStoredProfile() {
 
 function saveProfile(profile) {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+function candidateToProfile(candidate) {
+    if (!candidate) {
+        return null;
+    }
+    return {
+        nome: candidate.nome,
+        email: candidate.email,
+        telefone: candidate.telefone ?? '',
+        area: candidate.area ?? '',
+        desejaAlertas: Boolean(candidate.desejaAlertas),
+        curriculo: candidate.curriculo ?? '',
+        atualizadoEm: candidate.atualizadoEm ?? new Date().toISOString(),
+    };
 }
 
 function formatProfileDate(dateString) {
@@ -126,21 +142,72 @@ function updateProfileUI(profile) {
     }
 }
 
+function syncProfileFromCandidate(candidate) {
+    const profileData = candidateToProfile(candidate);
+    if (profileData) {
+        saveProfile(profileData);
+        updateProfileUI(profileData);
+    }
+    return profileData;
+}
+
 function initializeProfile() {
     const storedProfile = getStoredProfile();
     updateProfileUI(storedProfile);
-}
 
-function syncProfileFromTalent(talentData) {
-    const profileData = {
-        ...talentData,
-        atualizadoEm: new Date().toISOString()
-    };
-    saveProfile(profileData);
-    updateProfileUI(profileData);
+    if (storedProfile?.email) {
+        fetchCandidateByEmail(storedProfile.email)
+            .then((candidate) => {
+                if (candidate) {
+                    syncProfileFromCandidate(candidate);
+                }
+            })
+            .catch((error) => {
+                console.warn('Não foi possível sincronizar o cadastro salvo.', error);
+            });
+    }
 }
 
 initializeProfile();
+
+async function sendCandidateData(formData) {
+    if (formData.get('alertas') == null) {
+        formData.set('alertas', 'nao');
+    }
+
+    const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        body: formData
+    });
+
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch (error) {
+        console.warn('Não foi possível interpretar a resposta do servidor.', error);
+    }
+
+    if (!response.ok) {
+        const message = payload?.message ?? 'Não foi possível salvar seu cadastro. Tente novamente mais tarde.';
+        throw new Error(message);
+    }
+
+    return payload?.candidate ?? null;
+}
+
+async function fetchCandidateByEmail(email) {
+    if (!email) {
+        return null;
+    }
+
+    const response = await fetch(`${API_ENDPOINT}/${encodeURIComponent(email)}`);
+    if (!response.ok) {
+        return null;
+    }
+
+    const payload = await response.json();
+    return payload?.candidate ?? null;
+}
 
 function toggleMenu() {
     const expanded = navToggle.getAttribute('aria-expanded') === 'true';
@@ -219,17 +286,16 @@ newsletterForm?.addEventListener('submit', (event) => {
     newsletterForm.reset();
 });
 
-talentForm?.addEventListener('submit', (event) => {
+talentForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!talentFeedback) {
         return;
     }
+
     const formData = new FormData(talentForm);
     const nome = formData.get('nome')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
     const area = formData.get('area')?.toString();
-    const telefone = formData.get('telefone')?.toString().trim();
-    const desejaAlertas = formData.get('alertas') === 'sim';
     const arquivo = formData.get('curriculo');
 
     if (!nome || !email || !area || !isValidResumeFile(arquivo)) {
@@ -238,35 +304,30 @@ talentForm?.addEventListener('submit', (event) => {
         return;
     }
 
-    const talentPool = safeParseJSON(localStorage.getItem(TALENT_STORAGE_KEY), []);
-    talentPool.push({
-        nome,
-        email,
-        telefone,
-        area,
-        desejaAlertas,
-        curriculo: arquivo.name,
-        criadoEm: new Date().toISOString()
-    });
-    localStorage.setItem(TALENT_STORAGE_KEY, JSON.stringify(talentPool));
+    talentFeedback.textContent = 'Enviando seu cadastro...';
+    talentFeedback.style.color = '#2563eb';
 
-    syncProfileFromTalent({
-        nome,
-        email,
-        telefone,
-        area,
-        desejaAlertas,
-        curriculo: arquivo.name
-    });
+    try {
+        if (talentAlertsToggle && !talentAlertsToggle.checked) {
+            formData.delete('alertas');
+        }
 
-    talentFeedback.textContent = desejaAlertas
-        ? 'Cadastro concluído! Você receberá alertas de novas vagas e um consultor entrará em contato em breve.'
-        : 'Cadastro concluído! Entraremos em contato quando houver oportunidades compatíveis.';
-    talentFeedback.style.color = '#16a34a';
-    talentForm.reset();
+        const candidate = await sendCandidateData(formData);
+        const profileData = syncProfileFromCandidate(candidate);
+
+        const desejaAlertas = profileData?.desejaAlertas;
+        talentFeedback.textContent = desejaAlertas
+            ? 'Cadastro concluído! Você receberá alertas de novas vagas e um consultor entrará em contato em breve.'
+            : 'Cadastro concluído! Entraremos em contato quando houver oportunidades compatíveis.';
+        talentFeedback.style.color = '#16a34a';
+        talentForm.reset();
+    } catch (error) {
+        talentFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível enviar seu cadastro agora. Tente novamente mais tarde.';
+        talentFeedback.style.color = '#dc2626';
+    }
 });
 
-profileForm?.addEventListener('submit', (event) => {
+profileForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!profileFeedback) {
         return;
@@ -275,11 +336,8 @@ profileForm?.addEventListener('submit', (event) => {
     const formData = new FormData(profileForm);
     const nome = formData.get('nome')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
-    const telefone = formData.get('telefone')?.toString().trim();
     const area = formData.get('area')?.toString();
-    const desejaAlertas = formData.get('alertas') === 'sim';
     const arquivo = formData.get('curriculo');
-    const storedProfile = getStoredProfile();
 
     if (!nome || !email || !area) {
         profileFeedback.textContent = 'Informe nome, e-mail e área de interesse para atualizar seu cadastro.';
@@ -295,22 +353,26 @@ profileForm?.addEventListener('submit', (event) => {
         return;
     }
 
-    const curriculoNome = hasNewFile ? arquivo.name : storedProfile?.curriculo ?? '';
+    if (!hasNewFile) {
+        formData.delete('curriculo');
+    }
 
-    const profileData = {
-        nome,
-        email,
-        telefone,
-        area,
-        desejaAlertas,
-        curriculo: curriculoNome,
-        atualizadoEm: new Date().toISOString()
-    };
+    if (profileAlertsToggle && !profileAlertsToggle.checked) {
+        formData.delete('alertas');
+    }
 
-    saveProfile(profileData);
-    updateProfileUI(profileData);
-    profileFeedback.textContent = 'Perfil atualizado com sucesso! Suas preferências foram salvas.';
-    profileFeedback.style.color = '#16a34a';
+    profileFeedback.textContent = 'Salvando seu perfil...';
+    profileFeedback.style.color = '#2563eb';
+
+    try {
+        const candidate = await sendCandidateData(formData);
+        syncProfileFromCandidate(candidate);
+        profileFeedback.textContent = 'Perfil atualizado com sucesso! Suas preferências foram salvas.';
+        profileFeedback.style.color = '#16a34a';
+    } catch (error) {
+        profileFeedback.textContent = error instanceof Error ? error.message : 'Não foi possível atualizar seu perfil agora.';
+        profileFeedback.style.color = '#dc2626';
+    }
 });
 
 profileResumeInput?.addEventListener('change', () => {

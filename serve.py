@@ -10,20 +10,152 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import json
 import socket
+import sys
 import webbrowser
+from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
-from socketserver import TCPServer
+from socketserver import TCPServer, ThreadingMixIn
 from typing import Optional
+from urllib.parse import unquote
+
+import cgi
+
+import storage
+
+
+class ThreadedTCPServer(ThreadingMixIn, TCPServer):
+    daemon_threads = True
 
 
 class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
-    """HTTP handler that always serves files from the project root."""
+    """HTTP handler that serves static assets and candidate APIs."""
 
     def __init__(self, *args, **kwargs):
         project_root = Path(__file__).resolve().parent
         super().__init__(*args, directory=str(project_root), **kwargs)
+
+    # ---- Helpers -----------------------------------------------------
+
+    def log_error(self, format: str, *args) -> None:  # noqa: A003 - matching base signature
+        """Route server errors to stderr so they appear in the console."""
+
+        sys.stderr.write("ERROR: " + (format % args) + "\n")
+
+    def _send_json(self, payload: dict, status: HTTPStatus = HTTPStatus.OK) -> None:
+        response = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(response)))
+        self.end_headers()
+        self.wfile.write(response)
+
+    # ---- API handlers ------------------------------------------------
+
+    def do_POST(self) -> None:  # noqa: D401 - behavior documented via helper
+        if self.path == "/api/candidates":
+            self._handle_save_candidate()
+            return
+
+        super().do_POST()
+
+    def do_GET(self) -> None:
+        if self.path.startswith("/api/candidates/"):
+            email = unquote(self.path.split("/api/candidates/", 1)[1])
+            self._handle_get_candidate(email)
+            return
+
+        super().do_GET()
+
+    def _parse_candidate_payload(self) -> tuple[dict, Optional[str], Optional[bytes]]:
+        content_type = self.headers.get("Content-Type", "")
+
+        if "multipart/form-data" in content_type:
+            form = cgi.FieldStorage(
+                fp=self.rfile,
+                headers=self.headers,
+                environ={
+                    "REQUEST_METHOD": "POST",
+                    "CONTENT_TYPE": content_type,
+                    "CONTENT_LENGTH": self.headers.get("Content-Length", "0"),
+                },
+                keep_blank_values=True,
+            )
+
+            payload = {
+                "nome": form.getfirst("nome", "").strip(),
+                "email": form.getfirst("email", "").strip(),
+                "telefone": form.getfirst("telefone", "").strip(),
+                "area": form.getfirst("area", "").strip(),
+                "deseja_alertas": form.getfirst("alertas") == "sim",
+            }
+
+            resume_field = form["curriculo"] if "curriculo" in form else None
+            if getattr(resume_field, "file", None):
+                resume_filename = resume_field.filename or ""
+                resume_data = resume_field.file.read()
+            else:
+                resume_filename = None
+                resume_data = None
+
+            return payload, resume_filename, resume_data
+
+        if "application/json" in content_type:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = self.rfile.read(length)
+            try:
+                data = json.loads(body.decode("utf-8"))
+            except json.JSONDecodeError as exc:  # pragma: no cover - guardrail
+                raise storage.ValidationError("Não foi possível interpretar os dados enviados.") from exc
+
+            payload = {
+                "nome": str(data.get("nome", "")).strip(),
+                "email": str(data.get("email", "")).strip(),
+                "telefone": str(data.get("telefone", "")).strip(),
+                "area": str(data.get("area", "")).strip(),
+                "deseja_alertas": bool(data.get("desejaAlertas")),
+            }
+            return payload, None, None
+
+        raise storage.ValidationError("Tipo de conteúdo não suportado para o cadastro.")
+
+    def _handle_save_candidate(self) -> None:
+        try:
+            payload, resume_filename, resume_data = self._parse_candidate_payload()
+            candidate = storage.save_candidate(
+                payload,
+                resume_filename=resume_filename,
+                resume_data=resume_data,
+            )
+        except storage.ValidationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except Exception as exc:  # pragma: no cover - defensive guard
+            self.log_error("%s", str(exc))
+            self._send_json(
+                {"message": "Não foi possível salvar o cadastro no momento. Tente novamente mais tarde."},
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+            return
+
+        self._send_json({"candidate": candidate, "message": "Cadastro salvo com sucesso."})
+
+    def _handle_get_candidate(self, email: str) -> None:
+        if not email:
+            self._send_json({"message": "Informe um e-mail para consultar o cadastro."}, status=HTTPStatus.BAD_REQUEST)
+            return
+
+        candidate = storage.get_candidate_by_email(email)
+        if not candidate:
+            self._send_json(
+                {"message": "Nenhum cadastro foi encontrado para o e-mail informado."},
+                status=HTTPStatus.NOT_FOUND,
+            )
+            return
+
+        self._send_json({"candidate": candidate})
 
 
 def find_available_port(preferred_port: int) -> int:
@@ -60,7 +192,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     handler = ProjectHTTPRequestHandler
 
-    with TCPServer(("", port), handler) as httpd:
+    storage.initialize_database()
+
+    with ThreadedTCPServer(("", port), handler) as httpd:
         httpd.allow_reuse_address = True
         url = f"http://localhost:{port}/"
 
