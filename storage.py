@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
+import crypt
 import os
 import re
 import secrets
@@ -23,15 +23,19 @@ class ValidationError(StorageError):
     """Raised when incoming data is invalid or incomplete."""
 
 
+class AuthenticationError(StorageError):
+    """Raised when login credentials are invalid."""
+
+
 @dataclass
 class Candidate:
     id: int
     nome: str
     email: str
     telefone: str
-    area: str
-    deseja_alertas: bool
-    curriculo: Optional[str]
+    area_interesse: str
+    recebe_alertas: bool
+    curriculo_path: Optional[str]
     criado_em: str
     atualizado_em: str
 
@@ -41,9 +45,9 @@ class Candidate:
             "nome": self.nome,
             "email": self.email,
             "telefone": self.telefone,
-            "area": self.area,
-            "desejaAlertas": self.deseja_alertas,
-            "curriculo": self.curriculo,
+            "areaInteresse": self.area_interesse,
+            "recebeAlertas": self.recebe_alertas,
+            "curriculoPath": self.curriculo_path,
             "criadoEm": self.criado_em,
             "atualizadoEm": self.atualizado_em,
         }
@@ -80,13 +84,13 @@ def initialize_database() -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
+                area_interesse TEXT NOT NULL,
                 telefone TEXT,
-                area TEXT NOT NULL,
-                deseja_alertas INTEGER NOT NULL DEFAULT 0,
-                curriculo TEXT,
+                recebe_alertas INTEGER NOT NULL DEFAULT 1,
+                curriculo_path TEXT,
                 senha_hash TEXT NOT NULL,
-                criado_em TEXT NOT NULL,
-                atualizado_em TEXT NOT NULL
+                criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -96,17 +100,55 @@ def initialize_database() -> None:
 
 
 def _ensure_schema(conn: sqlite3.Connection) -> None:
-    """Ensure optional columns exist for older databases."""
+    """Bring legacy databases to the current schema."""
 
     conn.row_factory = sqlite3.Row
-    columns = {
-        row["name"]: row for row in conn.execute("PRAGMA table_info(candidates)").fetchall()
-    }
+    columns = {row["name"]: row for row in conn.execute("PRAGMA table_info(candidates)").fetchall()}
 
-    if "senha_hash" not in columns:
-        conn.execute("ALTER TABLE candidates ADD COLUMN senha_hash TEXT")
-        conn.execute("UPDATE candidates SET senha_hash = '' WHERE senha_hash IS NULL")
-        conn.commit()
+    if "area_interesse" not in columns and "area" in columns:
+        conn.execute("ALTER TABLE candidates ADD COLUMN area_interesse TEXT")
+        conn.execute("UPDATE candidates SET area_interesse = area WHERE area_interesse IS NULL")
+
+    if "recebe_alertas" not in columns and "deseja_alertas" in columns:
+        conn.execute("ALTER TABLE candidates ADD COLUMN recebe_alertas INTEGER NOT NULL DEFAULT 1")
+        conn.execute(
+            "UPDATE candidates SET recebe_alertas = deseja_alertas WHERE recebe_alertas IS NULL"
+        )
+
+    if "curriculo_path" not in columns and "curriculo" in columns:
+        conn.execute("ALTER TABLE candidates ADD COLUMN curriculo_path TEXT")
+        conn.execute(
+            "UPDATE candidates SET curriculo_path = curriculo WHERE curriculo_path IS NULL"
+        )
+
+    if "criado_em" in columns and columns["criado_em"]["type"].upper() != "DATETIME":
+        conn.execute("ALTER TABLE candidates RENAME TO candidates_legacy")
+        conn.execute(
+            """
+            CREATE TABLE candidates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                area_interesse TEXT NOT NULL,
+                telefone TEXT,
+                recebe_alertas INTEGER NOT NULL DEFAULT 1,
+                curriculo_path TEXT,
+                senha_hash TEXT NOT NULL,
+                criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO candidates (id, nome, email, area_interesse, telefone, recebe_alertas, curriculo_path, senha_hash, criado_em, atualizado_em)
+            SELECT id, nome, email, COALESCE(area_interesse, area), telefone, COALESCE(recebe_alertas, deseja_alertas, 1), COALESCE(curriculo_path, curriculo), senha_hash, criado_em, atualizado_em
+            FROM candidates_legacy
+            """
+        )
+        conn.execute("DROP TABLE candidates_legacy")
+
+    conn.commit()
 
 
 def _normalize_filename(filename: str) -> str:
@@ -146,18 +188,23 @@ def _row_to_candidate(row: sqlite3.Row) -> Candidate:
         nome=row["nome"],
         email=row["email"],
         telefone=row["telefone"] or "",
-        area=row["area"],
-        deseja_alertas=bool(row["deseja_alertas"]),
-        curriculo=row["curriculo"],
+        area_interesse=row["area_interesse"],
+        recebe_alertas=bool(row["recebe_alertas"]),
+        curriculo_path=row["curriculo_path"],
         criado_em=row["criado_em"],
         atualizado_em=row["atualizado_em"],
     )
 
 
-def save_candidate(payload: Dict[str, Any], *, resume_filename: Optional[str] = None, resume_data: Optional[bytes] = None) -> Dict[str, Any]:
-    """Create or update a candidate and return the stored representation."""
+def create_or_update_candidate(
+    payload: Dict[str, Any],
+    *,
+    resume_filename: Optional[str] = None,
+    resume_data: Optional[bytes] = None,
+) -> Dict[str, Any]:
+    """Persist candidate data, creating or updating based on the e-mail."""
 
-    required_fields = ("nome", "email", "area")
+    required_fields = ("nome", "email", "area_interesse")
     missing = [field for field in required_fields if not payload.get(field)]
     if missing:
         raise ValidationError(
@@ -166,87 +213,96 @@ def save_candidate(payload: Dict[str, Any], *, resume_filename: Optional[str] = 
 
     initialize_database()
 
-    now = datetime.now(timezone.utc).isoformat()
     email = payload["email"].strip()
     senha = payload.get("senha", "").strip()
+    nome = payload["nome"].strip()
+    telefone = payload.get("telefone", "").strip()
+    area_interesse = payload["area_interesse"].strip()
+    recebe_alertas = 1 if payload.get("recebe_alertas") else 0
 
     with sqlite3.connect(_get_database_path()) as conn:
         conn.row_factory = sqlite3.Row
         existing = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
 
-        resume_path = _store_resume(resume_filename, resume_data, existing["curriculo"] if existing else None)
+        resume_path = _store_resume(
+            resume_filename,
+            resume_data,
+            existing["curriculo_path"] if existing else None,
+        )
 
-        deseja_alertas = 1 if payload.get("deseja_alertas") else 0
-        telefone = payload.get("telefone", "").strip()
-        nome = payload["nome"].strip()
-        area = payload["area"].strip()
-
-        senha_hash = existing["senha_hash"] if existing else ""
+        senha_hash = existing["senha_hash"] if existing else None
 
         if existing:
             if senha:
                 senha_hash = _hash_password(senha)
         else:
             if not senha:
-                raise ValidationError("Defina uma senha para criar seu cadastro e acessar recomendações personalizadas.")
+                raise ValidationError(
+                    "Defina uma senha para criar seu cadastro e acessar recomendações personalizadas."
+                )
             senha_hash = _hash_password(senha)
+
+        conn.execute(
+            "PRAGMA foreign_keys = ON"
+        )  # pragma: no cover - harmless on current schema but future proof
 
         if existing:
             conn.execute(
                 """
                 UPDATE candidates
-                SET nome = ?, telefone = ?, area = ?, deseja_alertas = ?, curriculo = ?, senha_hash = ?, atualizado_em = ?
+                SET nome = ?, telefone = ?, area_interesse = ?, recebe_alertas = ?, curriculo_path = ?, senha_hash = ?, atualizado_em = CURRENT_TIMESTAMP
                 WHERE email = ?
                 """,
-                (nome, telefone, area, deseja_alertas, resume_path, senha_hash, now, email),
+                (nome, telefone, area_interesse, recebe_alertas, resume_path, senha_hash, email),
             )
-            conn.commit()
-            updated = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
         else:
             conn.execute(
                 """
-                INSERT INTO candidates (nome, email, telefone, area, deseja_alertas, curriculo, senha_hash, criado_em, atualizado_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO candidates (nome, email, telefone, area_interesse, recebe_alertas, curriculo_path, senha_hash)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (nome, email, telefone, area, deseja_alertas, resume_path, senha_hash, now, now),
+                (nome, email, telefone, area_interesse, recebe_alertas, resume_path, senha_hash),
             )
-            conn.commit()
-            updated = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
+        conn.commit()
 
-    candidate = _row_to_candidate(updated)
-    return candidate.to_payload()
+        updated = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
+
+    return _row_to_candidate(updated).to_payload()
 
 
 def get_candidate_by_email(email: str) -> Optional[Dict[str, Any]]:
-    initialize_database()
-
-    with sqlite3.connect(_get_database_path()) as conn:
-        conn.row_factory = sqlite3.Row
-        row = conn.execute("SELECT * FROM candidates WHERE email = ?", (email.strip(),)).fetchone()
-
-    if not row:
+    if not email:
         return None
 
-    return _row_to_candidate(row).to_payload()
-
-
-def authenticate_candidate(email: str, password: str) -> Dict[str, Any]:
-    """Return the candidate payload if the credentials are valid."""
-
-    if not email or not password:
-        raise ValidationError("Informe e-mail e senha para acessar seu perfil.")
-
     initialize_database()
 
     with sqlite3.connect(_get_database_path()) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute("SELECT * FROM candidates WHERE email = ?", (email.strip(),)).fetchone()
 
-    if not row or not row["senha_hash"]:
-        raise ValidationError("Nenhum cadastro foi encontrado para o e-mail informado.")
+    return _row_to_candidate(row).to_payload() if row else None
 
-    if not _verify_password(password, row["senha_hash"]):
-        raise ValidationError("Senha inválida. Verifique seus dados e tente novamente.")
+
+def validate_login(email: str, senha_plana: str) -> Dict[str, Any]:
+    """Validate the provided credentials and return the candidate payload."""
+
+    email = (email or "").strip()
+    senha_plana = (senha_plana or "").strip()
+
+    if not email or not senha_plana:
+        raise ValidationError("Informe e-mail e senha para continuar.")
+
+    initialize_database()
+
+    with sqlite3.connect(_get_database_path()) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
+
+    if not row or not row["senha_hash"]:
+        raise AuthenticationError("Credenciais inválidas. Verifique e tente novamente.")
+
+    if not _verify_password(senha_plana, row["senha_hash"]):
+        raise AuthenticationError("Credenciais inválidas. Verifique e tente novamente.")
 
     return _row_to_candidate(row).to_payload()
 
@@ -256,20 +312,23 @@ def _hash_password(password: str) -> str:
     if len(password) < 6:
         raise ValidationError("A senha deve ter pelo menos 6 caracteres.")
 
-    salt = secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 600_000)
-    return f"{salt}${digest.hex()}"
+    salt = crypt.mksalt(crypt.METHOD_BLOWFISH)
+    hashed = crypt.crypt(password, salt)
+    if not hashed:
+        raise StorageError("Não foi possível gerar o hash da senha no momento.")
+    return hashed
 
 
-def _verify_password(password: str, stored: str) -> bool:
-    if not stored:
+def _verify_password(password: str, stored_hash: str) -> bool:
+    if not stored_hash:
+        return False
+
+    computed = crypt.crypt(password.strip(), stored_hash)
+    if not computed:
         return False
 
     try:
-        salt, digest_hex = stored.split("$", 1)
-    except ValueError:
-        return False
-
-    computed = hashlib.pbkdf2_hmac("sha256", password.strip().encode("utf-8"), salt.encode("utf-8"), 600_000)
-    return secrets.compare_digest(digest_hex, computed.hex())
+        return secrets.compare_digest(computed, stored_hash)
+    except Exception:  # pragma: no cover - extremely defensive
+        return computed == stored_hash
 

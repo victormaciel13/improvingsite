@@ -49,13 +49,37 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
   ```
 
 ## Banco de dados e armazenamento de currículos
-- Ao iniciar o servidor (`serve.py`), o projeto cria automaticamente o banco SQLite em `data/site.db` e armazena os currículos enviados em `data/uploads/`.
+- Ao iniciar o servidor (`serve.py`), o projeto cria automaticamente o banco SQLite em `data/site.db` e armazena os currículos enviados em `data/uploads/` (ambos são criados se ainda não existirem).
 - Para alterar o diretório onde os dados são salvos, defina a variável de ambiente `IDEAL_DATA_DIR` antes de executar o servidor ou os testes.
-- Cada submissão feita pelos formulários de cadastro ou de atualização de perfil cria ou atualiza um registro único identificado pelo e-mail do candidato.
-- O formulário de cadastro solicita a criação de uma senha (mínimo de 6 caracteres) que é armazenada de forma criptografada para permitir o login posterior.
-- O endpoint `POST /api/candidates` aceita tanto `multipart/form-data` (formulários com arquivo) quanto JSON e sempre retorna a representação persistida do candidato.
-- O endpoint `GET /api/candidates/<email>` permite sincronizar o perfil já existente usando o próprio e-mail como chave.
-- O endpoint `POST /api/login` valida credenciais (`email` + `senha`) e devolve os dados do candidato quando o login é bem-sucedido.
+- Cada submissão feita pelos formulários de cadastro ou de atualização de perfil cria ou atualiza um registro único identificado pelo e-mail do candidato e sincroniza os arquivos no diretório `data/uploads/`.
+- Todas as senhas são convertidas em hash usando o backend Blowfish (`crypt.METHOD_BLOWFISH`, equivalente ao bcrypt com custo 12) antes de serem persistidas, garantindo que nenhuma credencial fique em texto puro no disco.
+- Colunas e campos principais da tabela `candidates`:
+  - `nome`, `email` (único), `area_interesse`, `telefone`
+  - `recebe_alertas` (0/1), `curriculo_path`, `senha_hash`
+  - `criado_em` e `atualizado_em` (com `CURRENT_TIMESTAMP` no SQLite)
+
+## API disponível
+- `POST /api/candidates`
+  - Aceita `multipart/form-data` (para formulários com currículo) **ou** JSON (`application/json`).
+  - Se o e-mail ainda não existe, cria um registro exigindo senha; caso contrário, atualiza os campos enviados (senha só é atualizada quando fornecida).
+  - Sempre retorna `{ "candidate": { ... } }` com `areaInteresse`, `recebeAlertas`, caminho do currículo e metadados de criação/atualização.
+- `GET /api/candidates/<email>`
+  - Retorna os dados completos do candidato para preencher os formulários de revisão.
+  - Responde com `404` caso o e-mail não esteja cadastrado.
+- `POST /api/login`
+  - Recebe JSON com `email` e `senha`.
+  - Em caso de sucesso devolve `{ "candidate": { ... } }` com nome e área de interesse, permitindo que o front-end registre a sessão.
+  - Retorna `401` se as credenciais estiverem incorretas e `400` quando o payload estiver incompleto.
+
+## Integração front-end com a API
+- O `login.js` envia as credenciais para `/api/login`, salva o e-mail mais recente em `localStorage` (auto preenchimento) e registra o objeto `idealSessionUser` em `sessionStorage` com `email`, `nome` e `areaInteresse`. Esse objeto é consumido pelas demais páginas para garantir que apenas usuários autenticados avancem para `home.html`, `cadastro.html` e `perfil.html`.
+- O mesmo script utiliza `POST /api/candidates` para o cadastro inicial direto no login, sincronizando imediatamente o banco local com o formulário recém-enviado.
+- O `main.js` (carregado após o login) consulta `sessionStorage` para confirmar a autenticidade da sessão e recuperar a área de interesse salva. Caso não exista sessão válida, o usuário é redirecionado de volta para `index.html`.
+- Páginas autenticadas:
+  - **`home.html`** destaca automaticamente os cards de vagas cuja `data-area` coincide com `areaInteresse` do usuário carregado em `sessionStorage`/`localStorage`.
+  - **`cadastro.html`** e **`perfil.html`** reaproveitam o mesmo endpoint `POST /api/candidates` para criar/atualizar registros, exibem mensagens de sucesso/erro e mantêm os campos de e-mail preenchidos com base na sessão ativa.
+  - **`perfil.html`** utiliza `GET /api/candidates/<email>` ao carregar para apresentar o resumo salvo, permitir upload opcional de um novo currículo e sincronizar os alertas de vagas.
+- Em todos os formulários, o feedback visual informa quando o currículo está “em análise”, quando alertas estão ativos e quando uma senha precisa ser reajustada.
 
 ## Como usar o login e as recomendações
 1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou, após autenticar-se, abra a página "Cadastre seu currículo" pelo menu principal) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.

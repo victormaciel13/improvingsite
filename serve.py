@@ -92,8 +92,8 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
                 "nome": form.getfirst("nome", "").strip(),
                 "email": form.getfirst("email", "").strip(),
                 "telefone": form.getfirst("telefone", "").strip(),
-                "area": form.getfirst("area", "").strip(),
-                "deseja_alertas": form.getfirst("alertas") == "sim",
+                "area_interesse": form.getfirst("area", "").strip(),
+                "recebe_alertas": form.getfirst("alertas") == "sim",
                 "senha": form.getfirst("senha", "").strip(),
             }
 
@@ -119,8 +119,19 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
                 "nome": str(data.get("nome", "")).strip(),
                 "email": str(data.get("email", "")).strip(),
                 "telefone": str(data.get("telefone", "")).strip(),
-                "area": str(data.get("area", "")).strip(),
-                "deseja_alertas": bool(data.get("desejaAlertas")),
+                "area_interesse": (
+                    str(
+                        data.get(
+                            "area_interesse",
+                            data.get("areaInteresse", data.get("area", "")),
+                        )
+                    ).strip()
+                ),
+                "recebe_alertas": bool(
+                    data.get("recebe_alertas")
+                    or data.get("recebeAlertas")
+                    or data.get("alertas")
+                ),
                 "senha": str(data.get("senha", "")).strip(),
             }
             return payload, None, None
@@ -130,13 +141,16 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
     def _handle_save_candidate(self) -> None:
         try:
             payload, resume_filename, resume_data = self._parse_candidate_payload()
-            candidate = storage.save_candidate(
+            candidate = storage.create_or_update_candidate(
                 payload,
                 resume_filename=resume_filename,
                 resume_data=resume_data,
             )
         except storage.ValidationError as exc:
             self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except storage.AuthenticationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.UNAUTHORIZED)
             return
         except Exception as exc:  # pragma: no cover - defensive guard
             self.log_error("%s", str(exc))
@@ -177,9 +191,12 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
         password = str(data.get("senha", "")).strip()
 
         try:
-            candidate = storage.authenticate_candidate(email, password)
+            candidate = storage.validate_login(email, password)
         except storage.ValidationError as exc:
             self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except storage.AuthenticationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.UNAUTHORIZED)
             return
         except Exception as exc:  # pragma: no cover - defensive guard
             self.log_error("%s", str(exc))

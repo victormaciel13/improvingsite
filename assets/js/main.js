@@ -32,8 +32,10 @@ const API_ENDPOINT = '/api/candidates';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
+const SESSION_USER_KEY = 'idealSessionUser';
 const APPLIED_JOBS_KEY = 'idealAppliedJobs';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
+let sessionUserData = null;
 
 function safeParseJSON(value, fallback) {
     try {
@@ -90,6 +92,41 @@ function rememberLoginEmail(email) {
     }
 }
 
+function setSessionUser(candidateLike) {
+    try {
+        if (!candidateLike || !candidateLike.email) {
+            sessionStorage.removeItem(SESSION_USER_KEY);
+            sessionUserData = null;
+            return null;
+        }
+
+        const payload = {
+            email: candidateLike.email,
+            nome: candidateLike.nome ?? '',
+            areaInteresse: candidateLike.areaInteresse ?? candidateLike.area ?? '',
+        };
+
+        sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(payload));
+        sessionUserData = payload;
+        return payload;
+    } catch (error) {
+        console.warn('Não foi possível salvar os dados da sessão.', error);
+        sessionUserData = null;
+        return null;
+    }
+}
+
+function getSessionUser() {
+    try {
+        const stored = sessionStorage.getItem(SESSION_USER_KEY);
+        sessionUserData = stored ? JSON.parse(stored) : null;
+    } catch (error) {
+        console.warn('Não foi possível recuperar o usuário da sessão.', error);
+        sessionUserData = null;
+    }
+    return sessionUserData;
+}
+
 function isSessionAuthenticated() {
     try {
         return sessionStorage.getItem(AUTH_STATE_KEY) === 'authenticated';
@@ -107,9 +144,9 @@ function candidateToProfile(candidate) {
         nome: candidate.nome,
         email: candidate.email,
         telefone: candidate.telefone ?? '',
-        area: candidate.area ?? '',
-        desejaAlertas: Boolean(candidate.desejaAlertas),
-        curriculo: candidate.curriculo ?? '',
+        area: candidate.areaInteresse ?? candidate.area ?? '',
+        desejaAlertas: Boolean(candidate.recebeAlertas ?? candidate.desejaAlertas),
+        curriculo: candidate.curriculoPath ?? candidate.curriculo ?? '',
         atualizadoEm: candidate.atualizadoEm ?? new Date().toISOString(),
     };
 }
@@ -249,15 +286,26 @@ function syncProfileFromCandidate(candidate) {
         rememberLoginEmail(profileData.email);
         saveProfile(profileData);
         updateProfileUI(profileData);
+        setSessionUser({
+            email: candidate.email,
+            nome: candidate.nome,
+            areaInteresse: candidate.areaInteresse ?? profileData.area ?? '',
+        });
     }
     return profileData;
 }
 
-function initializeProfile() {
+function initializeProfile(currentSessionUser) {
     const storedProfile = getStoredProfile();
     updateProfileUI(storedProfile);
-    if (storedProfile?.email) {
-        fetchCandidateByEmail(storedProfile.email)
+
+    if (!storedProfile && currentSessionUser?.areaInteresse) {
+        applyAreaRecommendations(currentSessionUser.areaInteresse);
+    }
+
+    const emailToFetch = currentSessionUser?.email ?? storedProfile?.email;
+    if (emailToFetch) {
+        fetchCandidateByEmail(emailToFetch)
             .then((candidate) => {
                 if (candidate) {
                     syncProfileFromCandidate(candidate);
@@ -269,10 +317,29 @@ function initializeProfile() {
     }
 }
 
-if (!isSessionAuthenticated()) {
+function prefillFormsFromSession(currentSessionUser) {
+    if (!currentSessionUser?.email) {
+        return;
+    }
+
+    const forms = [talentForm, profileForm];
+    forms.forEach((form) => {
+        const emailInput = form?.elements?.namedItem
+            ? form.elements.namedItem('email')
+            : form?.querySelector('[name="email"]');
+        if (emailInput && !emailInput.value) {
+            emailInput.value = currentSessionUser.email;
+        }
+    });
+}
+
+const initialSessionUser = getSessionUser();
+
+if (!isSessionAuthenticated() || !initialSessionUser?.email) {
     window.location.replace('index.html');
 } else {
-    initializeProfile();
+    prefillFormsFromSession(initialSessionUser);
+    initializeProfile(initialSessionUser);
     restoreAppliedJobs();
 }
 

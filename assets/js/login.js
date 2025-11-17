@@ -3,6 +3,7 @@ const PROFILE_ENDPOINT = '/api/candidates';
 const PROFILE_STORAGE_KEY = 'idealTalentProfile';
 const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
+const SESSION_USER_KEY = 'idealSessionUser';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 
 const loginForm = document.getElementById('login-form');
@@ -48,6 +49,25 @@ function getStoredProfile() {
     return safeParseJSON(localStorage.getItem(PROFILE_STORAGE_KEY));
 }
 
+function setSessionUser(candidateLike) {
+    try {
+        if (!candidateLike || !candidateLike.email) {
+            sessionStorage.removeItem(SESSION_USER_KEY);
+            return;
+        }
+
+        const payload = {
+            email: candidateLike.email ?? '',
+            nome: candidateLike.nome ?? '',
+            areaInteresse: candidateLike.areaInteresse ?? candidateLike.area ?? '',
+        };
+
+        sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(payload));
+    } catch (error) {
+        console.warn('Não foi possível atualizar o usuário da sessão.', error);
+    }
+}
+
 function setSessionAuthState(isAuthenticated) {
     try {
         if (isAuthenticated) {
@@ -77,9 +97,9 @@ function candidateToProfile(candidate) {
         nome: candidate.nome,
         email: candidate.email,
         telefone: candidate.telefone ?? '',
-        area: candidate.area ?? '',
-        desejaAlertas: Boolean(candidate.desejaAlertas),
-        curriculo: candidate.curriculo ?? '',
+        area: candidate.areaInteresse ?? candidate.area ?? '',
+        desejaAlertas: Boolean(candidate.recebeAlertas ?? candidate.desejaAlertas),
+        curriculo: candidate.curriculoPath ?? candidate.curriculo ?? '',
         atualizadoEm: candidate.atualizadoEm ?? new Date().toISOString(),
     };
 }
@@ -159,14 +179,25 @@ async function fetchCandidateByEmail(email) {
 async function syncCandidateAfterResponse(candidate, fallbackEmail) {
     const profile = syncProfile(candidate);
     const email = candidate?.email ?? fallbackEmail ?? '';
+    const areaInteresse = candidate?.areaInteresse ?? candidate?.area ?? profile?.area ?? '';
 
     if (email) {
         rememberLoginEmail(email);
+        setSessionUser({
+            email,
+            nome: candidate?.nome ?? profile?.nome ?? '',
+            areaInteresse,
+        });
     }
 
     if (!profile && email) {
         const refreshed = await fetchCandidateByEmail(email);
         if (refreshed) {
+            setSessionUser({
+                email: refreshed.email,
+                nome: refreshed.nome,
+                areaInteresse: refreshed.areaInteresse ?? refreshed.area ?? '',
+            });
             return syncProfile(refreshed);
         }
     }
@@ -325,6 +356,7 @@ loginForm?.addEventListener('submit', async (event) => {
         }, 400);
     } catch (error) {
         setSessionAuthState(false);
+        setSessionUser(null);
         loginFeedback.textContent = error instanceof Error
             ? error.message
             : 'Não foi possível fazer login agora. Tente novamente em instantes.';
@@ -386,6 +418,7 @@ registerForm?.addEventListener('submit', async (event) => {
         }, 500);
     } catch (error) {
         setSessionAuthState(false);
+        setSessionUser(null);
         registerFeedback.textContent = error instanceof Error
             ? error.message
             : 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
