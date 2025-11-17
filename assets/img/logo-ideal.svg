@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160" role="img" aria-labelledby="title desc">
+  <title id="title">Logo Ideal Empregos</title>
+  <desc id="desc">Texto Ideal Empregos em azul com elipse inclinada envolvendo as letras.</desc>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="110" cy="70" rx="90" ry="50" transform="rotate(-18 110 70)" stroke="#0091d0" stroke-width="12" opacity="0.75"/>
+    <ellipse cx="110" cy="90" rx="80" ry="45" transform="rotate(-18 110 90)" stroke="#1f4fa3" stroke-width="10" opacity="0.9"/>
+  </g>
+  <text x="40" y="95" fill="#1b2f8a" font-family="'Montserrat', 'Open Sans', 'Arial', sans-serif" font-size="62" font-weight="700" letter-spacing="-1">ideal</text>
+  <text x="58" y="132" fill="#1b2f8a" font-family="'Montserrat', 'Open Sans', 'Arial', sans-serif" font-size="30" font-weight="600">empregos</text>
+</svg>
