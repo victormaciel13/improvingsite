@@ -33,7 +33,12 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 5. **Sessão persistida enquanto o navegador estiver aberto:** mantendo a aba ativa, o usuário pode atualizar a página ou navegar entre âncoras sem refazer o login.
 
 ## Como visualizar o site localmente
-1. Garanta que você tenha o Python 3 instalado.
+1. Garanta que você tenha o Python 3 instalado e as dependências do projeto:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
 2. No diretório do projeto, execute:
 
    ```bash
@@ -52,7 +57,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - Ao iniciar o servidor (`serve.py`), o projeto cria automaticamente o banco SQLite em `data/site.db` e armazena os currículos enviados em `data/uploads/` (ambos são criados se ainda não existirem).
 - Para alterar o diretório onde os dados são salvos, defina a variável de ambiente `IDEAL_DATA_DIR` antes de executar o servidor ou os testes.
 - Cada submissão feita pelos formulários de cadastro ou de atualização de perfil cria ou atualiza um registro único identificado pelo e-mail do candidato e sincroniza os arquivos no diretório `data/uploads/`.
-- Todas as senhas são convertidas em hash usando o backend Blowfish (`crypt.METHOD_BLOWFISH`, equivalente ao bcrypt com custo 12) antes de serem persistidas, garantindo que nenhuma credencial fique em texto puro no disco.
+- Todas as senhas são convertidas em hash usando `bcrypt` (com custo padrão seguro) antes de serem persistidas, garantindo que nenhuma credencial fique em texto puro no disco. Caso a dependência não esteja disponível, o sistema recorre automaticamente a um hash PBKDF2 (SHA-256) igualmente seguro e compatível com os registros existentes.
 - Colunas e campos principais da tabela `candidates`:
   - `nome`, `email` (único), `area_interesse`, `telefone`
   - `recebe_alertas` (0/1), `curriculo_path`, `senha_hash`

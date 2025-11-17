@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-import crypt
+import base64
+import binascii
+import hashlib
 import os
 import re
 import secrets
@@ -11,6 +13,19 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+try:  # pragma: no cover - prefer native bcrypt when available
+    import bcrypt as _bcrypt_lib
+except ImportError:  # pragma: no cover - constrained envs can fall back later
+    _bcrypt_lib = None
+
+try:  # pragma: no cover - legacy fallback for pre-bcrypt hashes
+    import crypt as _legacy_crypt
+except ImportError:  # pragma: no cover - Windows may not ship crypt
+    _legacy_crypt = None
+
+_FALLBACK_PREFIX = "pbkdf2_sha256"
+_FALLBACK_ITERATIONS = 390000
 
 DATA_DIR_ENV = "IDEAL_DATA_DIR"
 
@@ -312,23 +327,69 @@ def _hash_password(password: str) -> str:
     if len(password) < 6:
         raise ValidationError("A senha deve ter pelo menos 6 caracteres.")
 
-    salt = crypt.mksalt(crypt.METHOD_BLOWFISH)
-    hashed = crypt.crypt(password, salt)
-    if not hashed:
-        raise StorageError("Não foi possível gerar o hash da senha no momento.")
-    return hashed
+    if _bcrypt_lib:
+        try:
+            hashed = _bcrypt_lib.hashpw(password.encode("utf-8"), _bcrypt_lib.gensalt())
+        except ValueError as exc:  # pragma: no cover - bcrypt internal edge case
+            raise StorageError("Não foi possível gerar o hash da senha no momento.") from exc
+        return hashed.decode("utf-8")
+
+    salt = secrets.token_bytes(16)
+    derived = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt, _FALLBACK_ITERATIONS
+    )
+    token = "$".join(
+        (
+            _FALLBACK_PREFIX,
+            str(_FALLBACK_ITERATIONS),
+            base64.b64encode(salt).decode("utf-8"),
+            base64.b64encode(derived).decode("utf-8"),
+        )
+    )
+    return token
 
 
 def _verify_password(password: str, stored_hash: str) -> bool:
     if not stored_hash:
         return False
 
-    computed = crypt.crypt(password.strip(), stored_hash)
-    if not computed:
+    password = (password or "").strip()
+    if not password:
         return False
 
-    try:
-        return secrets.compare_digest(computed, stored_hash)
-    except Exception:  # pragma: no cover - extremely defensive
-        return computed == stored_hash
+    if _bcrypt_lib and stored_hash.startswith("$2"):
+        try:
+            return _bcrypt_lib.checkpw(
+                password.encode("utf-8"), stored_hash.encode("utf-8")
+            )
+        except (ValueError, TypeError):
+            pass
+
+    if stored_hash.startswith(_FALLBACK_PREFIX + "$"):
+        try:
+            _, iterations, salt_b64, derived_b64 = stored_hash.split("$", 3)
+            iterations = int(iterations)
+            salt = base64.b64decode(salt_b64)
+            derived = base64.b64decode(derived_b64)
+        except (ValueError, TypeError, binascii.Error):
+            return False
+
+        candidate = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), salt, iterations
+        )
+        try:
+            return secrets.compare_digest(candidate, derived)
+        except Exception:  # pragma: no cover - extremely defensive
+            return candidate == derived
+
+    if _legacy_crypt and stored_hash.startswith("$"):
+        computed = _legacy_crypt.crypt(password, stored_hash)
+        if not computed:
+            return False
+        try:
+            return secrets.compare_digest(computed, stored_hash)
+        except Exception:  # pragma: no cover - extremely defensive
+            return computed == stored_hash
+
+    return False
 
