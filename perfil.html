@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Empregos | Atualize seu cadastro</title>
+    <meta name="description" content="Atualize seus dados, currículo e preferências no portal Ideal Empregos para manter seu perfil sempre pronto.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header class="site-header" id="topo">
+        <div class="container header__inner">
+            <a class="brand" href="home.html#topo" aria-label="Ideal Empregos">
+                <img class="brand__logo" src="assets/img/logo-ideal.svg" alt="" aria-hidden="true">
+                <span class="brand__text">Ideal Empregos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação principal">
+                <button class="main-nav__toggle" aria-expanded="false" aria-controls="menu-principal">
+                    <span class="sr-only">Abrir menu</span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul id="menu-principal">
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html" aria-current="page">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Como funciona</a></li>
+                    <li><a href="home.html#contato">Contato</a></li>
+                    <li class="main-nav__cta"><a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero" aria-labelledby="perfil-hero-title">
+            <div class="container page-hero__content">
+                <div>
+                    <p class="tag">Minha conta</p>
+                    <h1 id="perfil-hero-title">Atualize seu cadastro rapidamente</h1>
+                    <p class="page-hero__subtitle">Revise dados pessoais, preferências e documentos para manter seu perfil sempre pronto para novas oportunidades.</p>
+                    <ul class="page-hero__list">
+                        <li>Revise informações pessoais e de contato</li>
+                        <li>Atualize currículo e senha sempre que precisar</li>
+                        <li>Controle seus alertas de vagas com praticidade</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile profile--standalone" id="perfil" aria-labelledby="perfil-title">
+            <div class="container profile__grid">
+                <div class="profile__summary">
+                    <h2 id="perfil-title">Resumo do seu cadastro</h2>
+                    <p>Acompanhe as informações principais que temos registradas e certifique-se de mantê-las sempre atualizadas.</p>
+                    <dl class="profile__details">
+                        <div>
+                            <dt>Nome</dt>
+                            <dd data-profile-field="nome">Cadastre-se para preencher seu perfil.</dd>
+                        </div>
+                        <div>
+                            <dt>E-mail</dt>
+                            <dd data-profile-field="email">—</dd>
+                        </div>
+                        <div>
+                            <dt>Telefone</dt>
+                            <dd data-profile-field="telefone">—</dd>
+                        </div>
+                        <div>
+                            <dt>Área de interesse</dt>
+                            <dd data-profile-field="area">—</dd>
+                        </div>
+                        <div>
+                            <dt>Alertas por e-mail</dt>
+                            <dd data-profile-field="alertas">—</dd>
+                        </div>
+                    </dl>
+                    <p class="profile__note">Última atualização: <span data-profile-field="atualizado">Nenhum cadastro encontrado</span></p>
+                </div>
+                <form class="profile__form" id="profile-form" enctype="multipart/form-data" novalidate>
+                    <fieldset>
+                        <legend>Atualize seus dados</legend>
+                        <div class="form__field">
+                            <label for="profile-nome">Nome completo</label>
+                            <input type="text" id="profile-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-email">E-mail</label>
+                            <input type="email" id="profile-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-telefone">Telefone</label>
+                            <input type="tel" id="profile-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-area">Área de interesse</label>
+                            <select id="profile-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-curriculo">Atualizar currículo (opcional)</label>
+                            <input type="file" id="profile-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf">
+                            <p class="form__hint" data-profile-file>Nenhum arquivo cadastrado</p>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="profile-alertas" name="alertas" value="sim">
+                            <label for="profile-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                        <div class="form__field">
+                            <label for="profile-senha">Atualizar senha (opcional)</label>
+                            <input type="password" id="profile-senha" name="senha" placeholder="Informe uma nova senha" minlength="6">
+                            <p class="form__hint">Preencha apenas se desejar alterar sua senha atual.</p>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--secondary" type="submit">Salvar alterações</button>
+                    <p class="profile__feedback" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer__grid">
+            <div>
+                <a class="brand brand--footer" href="home.html#topo" aria-label="Ideal Empregos">
+                    <span class="brand__icon" aria-hidden="true">IE</span>
+                    <span class="brand__text">Ideal Empregos</span>
+                </a>
+                <p>Ideal Empregos - Cuidando de pessoas e construindo equipes de alto desempenho.</p>
+                <p class="footer__legal">CNPJ 12.345.678/0001-90 • Todos os direitos reservados.</p>
+            </div>
+            <div>
+                <h3>Links úteis</h3>
+                <ul>
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html" aria-current="page">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Processo</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3>Para empresas</h3>
+                <ul>
+                    <li><a href="home.html#contato">Solicite uma proposta</a></li>
+                    <li><a href="home.html#insights-title">Materiais gratuitos</a></li>
+                    <li><a href="home.html#newsletter">Newsletter</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <h3>Siga a Ideal Empregos</h3>
+                <ul>
+                    <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
+                    <li><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+                    <li><a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <button class="back-to-top" type="button" aria-label="Voltar ao topo">
+            ↑
+        </button>
+    </footer>
+
+    <script src="assets/js/main.js" defer></script>
+</body>
+</html>
