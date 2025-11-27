@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ideal Empregos | Painel do Administrador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="admin">
+  <header class="main-header">
+    <div class="container main-header__inner">
+      <a class="brand" href="index.html">
+        <img src="assets/img/logo-ideal.svg" alt="Ideal Empregos" class="brand__logo">
+        <span class="brand__text">Ideal Empregos</span>
+      </a>
+      <div class="main-header__actions">
+        <a class="btn btn--whatsapp" href="https://wa.me/551135391330" target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin__layout container">
+    <section class="admin__panel" aria-labelledby="admin-acesso">
+      <div class="admin__auth" data-admin-auth>
+        <div class="admin__hero">
+          <p class="eyebrow">Painel restrito</p>
+          <h1 id="admin-acesso">Acompanhe candidaturas e decida o próximo passo</h1>
+          <p class="lead">Use suas credenciais de administrador para revisar inscrições, aceitar candidatos ou recusar perfis que não atendem aos requisitos.</p>
+        </div>
+        <form id="admin-login-form" class="form admin__form" novalidate>
+          <div class="form__field">
+            <label for="admin-email">Usuário do administrador</label>
+            <input type="text" id="admin-email" name="email" placeholder="admideal" required>
+          </div>
+          <div class="form__field">
+            <label for="admin-senha">Senha</label>
+            <input type="password" id="admin-senha" name="senha" placeholder="••••••••" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn--primary">Entrar no painel</button>
+          <p class="form__feedback admin__feedback" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="admin__content" data-admin-dashboard hidden>
+        <div class="admin__summary">
+          <div>
+            <p class="eyebrow">Admin</p>
+            <h2 class="admin__welcome" data-admin-name>Bem-vindo(a)</h2>
+            <p class="muted">Veja quantos candidatos se inscreveram em cada vaga e aprove ou recuse conforme o andamento do processo seletivo.</p>
+          </div>
+          <div class="admin__chips" data-admin-metrics></div>
+        </div>
+
+        <section aria-labelledby="admin-candidaturas" class="admin__table-card">
+          <div class="admin__table-head">
+            <div>
+              <p class="eyebrow">Candidaturas</p>
+              <h3 id="admin-candidaturas">Processos em andamento</h3>
+            </div>
+            <div class="admin__legend">
+              <span class="badge badge--info">Em análise</span>
+              <span class="badge badge--success">Aceito</span>
+              <span class="badge badge--danger">Recusado</span>
+            </div>
+          </div>
+          <div class="admin__table-wrapper">
+            <table class="admin__table" aria-describedby="admin-candidaturas">
+              <thead>
+                <tr>
+                  <th>Vaga</th>
+                  <th>Área</th>
+                  <th>Candidato</th>
+                  <th>Status</th>
+                  <th class="align-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody data-admin-rows>
+                <tr><td colspan="5" class="muted">Nenhuma candidatura encontrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">Ideal Empregos</p>
+      <p class="footer__contact">Contato oficial: <a href="https://wa.me/551135391330" target="_blank" rel="noopener noreferrer">(11) 3539-1330</a></p>
+    </div>
+  </footer>
+
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

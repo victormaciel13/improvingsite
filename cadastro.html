@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Empregos | Cadastre seu currículo</title>
+    <meta name="description" content="Cadastre seu currículo na Ideal Empregos, envie seus documentos e ative alertas personalizados de vagas.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header class="site-header" id="topo">
+        <div class="container header__inner">
+            <a class="brand" href="home.html#topo" aria-label="Ideal Empregos">
+                <img class="brand__logo" src="assets/img/logo-ideal.svg" alt="" aria-hidden="true">
+                <span class="brand__text">Ideal Empregos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação principal">
+                <button class="main-nav__toggle" aria-expanded="false" aria-controls="menu-principal">
+                    <span class="sr-only">Abrir menu</span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul id="menu-principal">
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html" aria-current="page">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Como funciona</a></li>
+                    <li><a href="home.html#contato">Contato</a></li>
+                    <li class="main-nav__cta"><a class="btn btn--cta" href="https://wa.me/551135391330" target="_blank" rel="noopener" aria-label="Conversar com a Ideal Empregos pelo WhatsApp">Falar no WhatsApp</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero" aria-labelledby="cadastro-hero-title">
+            <div class="container page-hero__content">
+                <div>
+                    <p class="tag">Banco de talentos</p>
+                    <h1 id="cadastro-hero-title">Cadastre seu currículo com a Ideal Empregos</h1>
+                    <p class="page-hero__subtitle">Informe seus dados, envie o currículo e ative os alertas por e-mail para receber oportunidades compatíveis assim que forem publicadas.</p>
+                    <ul class="page-hero__list">
+                        <li>Currículo seguro com atualizações ilimitadas</li>
+                        <li>Alertas personalizados para novas vagas</li>
+                        <li>Acompanhamento próximo dos consultores Ideal</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="talent talent--standalone" id="cadastro" aria-labelledby="cadastro-title">
+            <div class="container talent__grid">
+                <div class="talent__content">
+                    <h2 id="cadastro-title">Preencha seus dados para começar</h2>
+                    <p>Depois de enviar as informações abaixo, você poderá acessar o portal com sua senha e acompanhar candidaturas, recomendações e comunicados em tempo real.</p>
+                    <ul class="talent__highlights">
+                        <li>Receba convites para vagas alinhadas ao seu perfil</li>
+                        <li>Participe de mentorias e eventos exclusivos</li>
+                        <li>Tenha suporte dedicado durante todo o processo seletivo</li>
+                    </ul>
+                </div>
+                <form class="talent__form" id="talent-form" enctype="multipart/form-data" novalidate>
+                    <fieldset>
+                        <legend>Dados do candidato</legend>
+                        <div class="form__field">
+                            <label for="talent-nome">Nome completo</label>
+                            <input type="text" id="talent-nome" name="nome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-email">E-mail</label>
+                            <input type="email" id="talent-email" name="email" placeholder="Seu melhor e-mail" required>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-senha">Crie uma senha</label>
+                            <input type="password" id="talent-senha" name="senha" placeholder="Mínimo de 6 caracteres" minlength="6" required>
+                            <p class="form__hint">Você usará esta senha para entrar pelo portal e acompanhar suas candidaturas.</p>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-telefone">Telefone</label>
+                            <input type="tel" id="talent-telefone" name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-area">Área de interesse</label>
+                            <select id="talent-area" name="area" required>
+                                <option value="">Selecione uma área</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="form__field">
+                            <label for="talent-curriculo">Currículo (PDF ou DOC)</label>
+                            <input type="file" id="talent-curriculo" name="curriculo" accept=".pdf,.doc,.docx,.odt,.rtf" required>
+                        </div>
+                        <div class="form__field form__field--checkbox">
+                            <input type="checkbox" id="talent-alertas" name="alertas" value="sim" checked>
+                            <label for="talent-alertas">Quero receber novas vagas por e-mail</label>
+                        </div>
+                    </fieldset>
+                    <button class="btn btn--primary" type="submit">Enviar currículo</button>
+                    <p class="talent__feedback" role="status" aria-live="polite"></p>
+                    <p class="talent__privacy">Seus dados ficam seguros conosco e podem ser atualizados a qualquer momento.</p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer__grid">
+            <div>
+                <a class="brand brand--footer" href="home.html#topo" aria-label="Ideal Empregos">
+                    <span class="brand__icon" aria-hidden="true">IE</span>
+                    <span class="brand__text">Ideal Empregos</span>
+                </a>
+                <p>Ideal Empregos - Cuidando de pessoas e construindo equipes de alto desempenho.</p>
+                <p class="footer__legal">CNPJ 12.345.678/0001-90 • Todos os direitos reservados.</p>
+            </div>
+            <div>
+                <h3>Links úteis</h3>
+                <ul>
+                    <li><a href="home.html#sobre">Sobre</a></li>
+                    <li><a href="home.html#servicos">Serviços</a></li>
+                    <li><a href="home.html#vagas">Vagas</a></li>
+                    <li><a href="cadastro.html" aria-current="page">Cadastre seu currículo</a></li>
+                    <li><a href="perfil.html">Atualize seu cadastro</a></li>
+                    <li><a href="home.html#processo">Processo</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3>Para empresas</h3>
+                <ul>
+                    <li><a href="home.html#contato">Solicite uma proposta</a></li>
+                    <li><a href="home.html#insights-title">Materiais gratuitos</a></li>
+                    <li><a href="home.html#newsletter">Newsletter</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <h3>Siga a Ideal Empregos</h3>
+                <ul>
+                    <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
+                    <li><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+                    <li><a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <button class="back-to-top" type="button" aria-label="Voltar ao topo">
+            ↑
+        </button>
+    </footer>
+
+    <script src="assets/js/main.js" defer></script>
+</body>
+</html>
