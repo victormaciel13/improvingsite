@@ -28,6 +28,8 @@ _FALLBACK_PREFIX = "pbkdf2_sha256"
 _FALLBACK_ITERATIONS = 390000
 
 DATA_DIR_ENV = "IDEAL_DATA_DIR"
+ADMIN_EMAIL_ENV = "IDEAL_ADMIN_EMAIL"
+ADMIN_PASSWORD_ENV = "IDEAL_ADMIN_PASSWORD"
 
 
 class StorageError(RuntimeError):
@@ -53,6 +55,7 @@ class Candidate:
     curriculo_path: Optional[str]
     criado_em: str
     atualizado_em: str
+    is_admin: bool
 
     def to_payload(self) -> Dict[str, Any]:
         return {
@@ -65,6 +68,7 @@ class Candidate:
             "curriculoPath": self.curriculo_path,
             "criadoEm": self.criado_em,
             "atualizadoEm": self.atualizado_em,
+            "isAdmin": self.is_admin,
         }
 
 
@@ -104,14 +108,30 @@ def initialize_database() -> None:
                 recebe_alertas INTEGER NOT NULL DEFAULT 1,
                 curriculo_path TEXT,
                 senha_hash TEXT NOT NULL,
+                is_admin INTEGER NOT NULL DEFAULT 0,
                 criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
                 atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS applications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                candidate_email TEXT NOT NULL,
+                job_id TEXT NOT NULL,
+                job_title TEXT,
+                status TEXT NOT NULL DEFAULT 'em_analise',
+                criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(candidate_email) REFERENCES candidates(email) ON DELETE CASCADE
             )
             """
         )
         conn.commit()
 
         _ensure_schema(conn)
+        _ensure_default_admin(conn)
 
 
 def _ensure_schema(conn: sqlite3.Connection) -> None:
@@ -135,6 +155,9 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
         conn.execute(
             "UPDATE candidates SET curriculo_path = curriculo WHERE curriculo_path IS NULL"
         )
+
+    if "is_admin" not in columns:
+        conn.execute("ALTER TABLE candidates ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0")
 
     if "criado_em" in columns and columns["criado_em"]["type"].upper() != "DATETIME":
         conn.execute("ALTER TABLE candidates RENAME TO candidates_legacy")
@@ -163,6 +186,49 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
         )
         conn.execute("DROP TABLE candidates_legacy")
 
+    conn.commit()
+
+
+def _ensure_default_admin(conn: sqlite3.Connection) -> None:
+    """Create or refresh a default admin account when configured."""
+
+    email = os.getenv(ADMIN_EMAIL_ENV, "admin@idealempregos.test").strip()
+    password = os.getenv(ADMIN_PASSWORD_ENV, "admin123").strip()
+
+    if not email or not password:
+        return
+
+    conn.row_factory = sqlite3.Row
+    existing = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
+
+    if existing:
+        conn.execute(
+            """
+            UPDATE candidates
+            SET is_admin = 1, atualizado_em = CURRENT_TIMESTAMP
+            WHERE email = ?
+            """,
+            (email,),
+        )
+        conn.commit()
+        return
+
+    senha_hash = _hash_password(password)
+    conn.execute(
+        """
+        INSERT INTO candidates (nome, email, telefone, area_interesse, recebe_alertas, curriculo_path, senha_hash, is_admin)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        """,
+        (
+            "Administrador Ideal Empregos",
+            email,
+            "",
+            "administracao",
+            0,
+            None,
+            senha_hash,
+        ),
+    )
     conn.commit()
 
 
@@ -208,7 +274,28 @@ def _row_to_candidate(row: sqlite3.Row) -> Candidate:
         curriculo_path=row["curriculo_path"],
         criado_em=row["criado_em"],
         atualizado_em=row["atualizado_em"],
+        is_admin=bool(row["is_admin"]),
     )
+
+
+def _row_to_application(row: sqlite3.Row) -> Dict[str, Any]:
+    keys = row.keys()
+    nome = row["nome"] if "nome" in keys else ""
+    area = row["area_interesse"] if "area_interesse" in keys else ""
+
+    return {
+        "id": row["id"],
+        "jobId": row["job_id"],
+        "jobTitle": row["job_title"] or "",
+        "status": row["status"],
+        "criadoEm": row["criado_em"],
+        "atualizadoEm": row["atualizado_em"],
+        "candidate": {
+            "email": row["candidate_email"],
+            "nome": nome,
+            "areaInteresse": area,
+        },
+    }
 
 
 def create_or_update_candidate(
@@ -320,6 +407,134 @@ def validate_login(email: str, senha_plana: str) -> Dict[str, Any]:
         raise AuthenticationError("Credenciais inválidas. Verifique e tente novamente.")
 
     return _row_to_candidate(row).to_payload()
+
+
+def is_admin(email: str) -> bool:
+    if not email:
+        return False
+
+    initialize_database()
+
+    with sqlite3.connect(_get_database_path()) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT is_admin FROM candidates WHERE email = ?", (email.strip(),)
+        ).fetchone()
+    return bool(row["is_admin"]) if row else False
+
+
+def upsert_application(candidate_email: str, job_id: str, job_title: str = "") -> Dict[str, Any]:
+    candidate_email = (candidate_email or "").strip()
+    job_id = (job_id or "").strip()
+    job_title = (job_title or "").strip()
+
+    if not candidate_email or not job_id:
+        raise ValidationError("Informe o e-mail do candidato e o identificador da vaga.")
+
+    initialize_database()
+
+    with sqlite3.connect(_get_database_path()) as conn:
+        conn.row_factory = sqlite3.Row
+        candidate = conn.execute(
+            "SELECT email, area_interesse, nome FROM candidates WHERE email = ?",
+            (candidate_email,),
+        ).fetchone()
+        if not candidate:
+            raise ValidationError("Nenhum cadastro foi encontrado para o e-mail informado.")
+
+        existing = conn.execute(
+            "SELECT * FROM applications WHERE candidate_email = ? AND job_id = ?",
+            (candidate_email, job_id),
+        ).fetchone()
+
+        if existing:
+            conn.execute(
+                """
+                UPDATE applications
+                SET job_title = ?, status = 'em_analise', atualizado_em = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (job_title, existing["id"]),
+            )
+            app_id = existing["id"]
+        else:
+            conn.execute(
+                """
+                INSERT INTO applications (candidate_email, job_id, job_title)
+                VALUES (?, ?, ?)
+                """,
+                (candidate_email, job_id, job_title),
+            )
+            app_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        conn.commit()
+
+        row = conn.execute(
+            """
+            SELECT a.*, c.nome, c.area_interesse
+            FROM applications a
+            JOIN candidates c ON c.email = a.candidate_email
+            WHERE a.id = ?
+            """,
+            (app_id,),
+        ).fetchone()
+
+    return _row_to_application(row)
+
+
+def list_applications() -> list[Dict[str, Any]]:
+    initialize_database()
+    with sqlite3.connect(_get_database_path()) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT a.*, c.nome, c.area_interesse
+            FROM applications a
+            JOIN candidates c ON c.email = a.candidate_email
+            ORDER BY a.criado_em DESC
+            """
+        ).fetchall()
+    return [_row_to_application(row) for row in rows]
+
+
+def update_application_status(application_id: int, status: str) -> Dict[str, Any]:
+    allowed = {"em_analise", "aceito", "recusado"}
+    if status not in allowed:
+        raise ValidationError("Status inválido. Use em_analise, aceito ou recusado.")
+
+    initialize_database()
+
+    with sqlite3.connect(_get_database_path()) as conn:
+        conn.row_factory = sqlite3.Row
+        existing = conn.execute(
+            "SELECT * FROM applications WHERE id = ?",
+            (application_id,),
+        ).fetchone()
+
+        if not existing:
+            raise ValidationError("Nenhuma candidatura foi encontrada para o identificador informado.")
+
+        conn.execute(
+            """
+            UPDATE applications
+            SET status = ?, atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (status, application_id),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            """
+            SELECT a.*, c.nome, c.area_interesse
+            FROM applications a
+            JOIN candidates c ON c.email = a.candidate_email
+            WHERE a.id = ?
+            """,
+            (application_id,),
+        ).fetchone()
+
+    return _row_to_application(row)
 
 
 def _hash_password(password: str) -> str:

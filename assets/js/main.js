@@ -34,6 +34,7 @@ const LOGIN_STORAGE_KEY = 'idealTalentLoginEmail';
 const AUTH_STATE_KEY = 'idealTalentAuthState';
 const SESSION_USER_KEY = 'idealSessionUser';
 const APPLIED_JOBS_KEY = 'idealAppliedJobs';
+const APPLICATION_ENDPOINT = '/api/applications';
 const ALLOWED_RESUME_EXTENSIONS = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
 let sessionUserData = null;
 
@@ -220,6 +221,50 @@ function updateJobApplicationUI(jobCard, jobId, jobTitle, alreadyApplied) {
     if (applyButton) {
         applyButton.classList.add('is-applied');
         applyButton.textContent = 'Currículo em análise';
+    }
+}
+
+async function sendJobApplication(jobId, jobTitle, feedbackElement) {
+    const sessionUser = getSessionUser();
+
+    if (!sessionUser || !sessionUser.email) {
+        window.location.href = 'index.html';
+        return false;
+    }
+
+    try {
+        const response = await fetch(APPLICATION_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: sessionUser.email,
+                jobId,
+                jobTitle,
+            }),
+        });
+
+        if (!response.ok) {
+            const payload = await response.json().catch(() => null);
+            const message = payload?.message || 'Não foi possível registrar sua candidatura agora.';
+            if (feedbackElement) {
+                feedbackElement.textContent = message;
+                feedbackElement.style.color = '#dc2626';
+                feedbackElement.hidden = false;
+            }
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.warn('Erro ao registrar candidatura.', error);
+        if (feedbackElement) {
+            feedbackElement.textContent = 'Não foi possível registrar sua candidatura. Tente novamente.';
+            feedbackElement.style.color = '#dc2626';
+            feedbackElement.hidden = false;
+        }
+        return false;
     }
 }
 
@@ -443,7 +488,7 @@ favoritoButtons.forEach((button) => {
 });
 
 candidatarButtons.forEach((button) => {
-    button.addEventListener('click', (event) => {
+    button.addEventListener('click', async (event) => {
         event.preventDefault();
         const jobCard = button.closest('.job-card');
         const jobId = jobCard?.id || button.dataset.jobTarget?.replace('#', '');
@@ -451,12 +496,17 @@ candidatarButtons.forEach((button) => {
         const appliedJobs = getAppliedJobs();
         const alreadyApplied = jobId ? appliedJobs.includes(jobId) : false;
 
-        if (jobId && !alreadyApplied) {
+        const feedbackElement = getJobFeedbackElement(jobId);
+        const sent = await sendJobApplication(jobId, jobTitle, feedbackElement);
+
+        if (sent && jobId && !alreadyApplied) {
             appliedJobs.push(jobId);
             saveAppliedJobs(appliedJobs);
         }
 
-        updateJobApplicationUI(jobCard, jobId, jobTitle, alreadyApplied);
+        if (sent) {
+            updateJobApplicationUI(jobCard, jobId, jobTitle, alreadyApplied);
+        }
         if (typeof button.blur === 'function') {
             button.blur();
         }

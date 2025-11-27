@@ -17,6 +17,8 @@ class StorageTestCase(unittest.TestCase):
     def tearDown(self):
         self.tmpdir.cleanup()
         os.environ.pop('IDEAL_DATA_DIR', None)
+        os.environ.pop('IDEAL_ADMIN_EMAIL', None)
+        os.environ.pop('IDEAL_ADMIN_PASSWORD', None)
 
     def test_create_or_update_candidate_persists_record_and_file(self):
         payload = {
@@ -112,6 +114,36 @@ class StorageTestCase(unittest.TestCase):
 
         with self.assertRaises(storage.AuthenticationError):
             storage.validate_login('ana@example.com', 'senhaIncorreta')
+
+    def test_admin_default_account_and_application_flow(self):
+        os.environ['IDEAL_ADMIN_EMAIL'] = 'admin@example.com'
+        os.environ['IDEAL_ADMIN_PASSWORD'] = 'AdminPass1'
+        storage.initialize_database()
+
+        admin = storage.get_candidate_by_email('admin@example.com')
+        self.assertTrue(admin['isAdmin'])
+        self.assertTrue(storage.is_admin('admin@example.com'))
+        self.assertIsNotNone(storage.validate_login('admin@example.com', 'AdminPass1'))
+
+        candidate_payload = {
+            'nome': 'Beatriz Lima',
+            'email': 'bea@example.com',
+            'telefone': '(11) 93333-3333',
+            'area_interesse': 'logistica',
+            'recebe_alertas': True,
+            'senha': 'SenhaSegura9',
+        }
+        storage.create_or_update_candidate(candidate_payload)
+
+        application = storage.upsert_application('bea@example.com', 'vaga-logistica', 'Auxiliar de Logística Temporário')
+        self.assertEqual(application['status'], 'em_analise')
+        self.assertEqual(application['candidate']['email'], 'bea@example.com')
+
+        listed = storage.list_applications()
+        self.assertTrue(any(app['jobId'] == 'vaga-logistica' for app in listed))
+
+        updated = storage.update_application_status(application['id'], 'aceito')
+        self.assertEqual(updated['status'], 'aceito')
 
 
 if __name__ == '__main__':

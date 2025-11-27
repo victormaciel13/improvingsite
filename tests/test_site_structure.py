@@ -7,14 +7,17 @@ HOME_PATH = BASE_DIR / "home.html"
 LOGIN_PATH = BASE_DIR / "index.html"
 CADASTRO_PATH = BASE_DIR / "cadastro.html"
 PERFIL_PATH = BASE_DIR / "perfil.html"
+ADMIN_PATH = BASE_DIR / "admin.html"
 CSS_PATH = BASE_DIR / "assets" / "css" / "style.css"
 MAIN_JS_PATH = BASE_DIR / "assets" / "js" / "main.js"
 LOGIN_JS_PATH = BASE_DIR / "assets" / "js" / "login.js"
+ADMIN_JS_PATH = BASE_DIR / "assets" / "js" / "admin.js"
 
 HOME_CONTENT = HOME_PATH.read_text(encoding="utf-8")
 LOGIN_CONTENT = LOGIN_PATH.read_text(encoding="utf-8")
 CADASTRO_CONTENT = CADASTRO_PATH.read_text(encoding="utf-8")
 PERFIL_CONTENT = PERFIL_PATH.read_text(encoding="utf-8")
+ADMIN_CONTENT = ADMIN_PATH.read_text(encoding="utf-8")
 
 
 class TestSiteStructure(unittest.TestCase):
@@ -25,9 +28,11 @@ class TestSiteStructure(unittest.TestCase):
             LOGIN_PATH,
             CADASTRO_PATH,
             PERFIL_PATH,
+            ADMIN_PATH,
             CSS_PATH,
             MAIN_JS_PATH,
             LOGIN_JS_PATH,
+            ADMIN_JS_PATH,
             BASE_DIR / "README.md",
             BASE_DIR / "serve.py",
         ]
@@ -155,7 +160,7 @@ class TestSiteStructure(unittest.TestCase):
         )
 
     def test_assets_exist_and_not_empty(self):
-        for asset in (CSS_PATH, MAIN_JS_PATH, LOGIN_JS_PATH):
+        for asset in (CSS_PATH, MAIN_JS_PATH, LOGIN_JS_PATH, ADMIN_JS_PATH):
             with self.subTest(asset=asset.name):
                 self.assertTrue(asset.exists(), f"O arquivo {asset.name} deve existir.")
                 self.assertGreater(
@@ -163,6 +168,20 @@ class TestSiteStructure(unittest.TestCase):
                     0,
                     f"O arquivo {asset.name} não pode estar vazio.",
                 )
+
+    def test_admin_panel_requires_login_and_lists_table(self):
+        self.assertIsNotNone(
+            re.search(r'id=\"admin-login-form\"', ADMIN_CONTENT),
+            msg="A página do administrador deve oferecer um formulário de login dedicado.",
+        )
+        self.assertIsNotNone(
+            re.search(r'data-admin-dashboard', ADMIN_CONTENT),
+            msg="O painel administrativo deve ter uma área separada para o dashboard.",
+        )
+        self.assertIsNotNone(
+            re.search(r'data-admin-rows', ADMIN_CONTENT),
+            msg="A tabela de candidaturas precisa de um corpo identificável para preenchimento dinâmico.",
+        )
 
     def test_talent_form_has_required_fields(self):
         required_fields = {

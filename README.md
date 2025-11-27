@@ -7,9 +7,11 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - `home.html`: landing page completa apresentada após a autenticação.
 - `cadastro.html`: página dedicada para inscrição no banco de talentos após o login.
 - `perfil.html`: página exclusiva para revisar e atualizar um cadastro existente.
+- `admin.html`: painel restrito para revisar candidaturas, aceitar ou recusar perfis e acompanhar totais por vaga.
 - `assets/css/style.css`: estilos globais e componentes reutilizáveis.
 - `assets/js/main.js`: comportamentos interativos da landing page autenticada.
 - `assets/js/login.js`: fluxo de autenticação, preenchimento automático e redirecionamento para a home.
+- `assets/js/admin.js`: autenticação administrativa e operações de revisão de candidaturas.
 - `tests/`: suíte de testes automatizados para validar a estrutura do site.
 - `serve.py`: script para subir rapidamente um servidor local e visualizar o site.
 - `storage.py`: camada de persistência responsável pelo banco de dados SQLite que armazena os cadastros.
@@ -21,6 +23,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
 - **Botão oficial de WhatsApp (11 3539-1330)** fixo no cabeçalho das duas páginas para facilitar o contato com a equipe de atendimento.
 - **Página “Cadastre seu currículo”** (`cadastro.html`) com upload de arquivos (PDF/DOC), definição de senha e preferência por alertas por e-mail, alimentando diretamente o banco de dados SQLite.
 - **Página “Atualize seu cadastro”** (`perfil.html`) para revisar informações salvas, ajustar alertas, enviar um novo currículo e trocar a senha com regras mínimas de segurança.
+- **Painel do administrador** (`admin.html`) para acompanhar todos os processos seletivos, contabilizar inscritos por vaga e aceitar ou recusar candidatos autenticados.
 - **Destaque automático de vagas** relacionadas à área do candidato autenticado, facilitando o início das candidaturas.
 - **Mensagens de feedback acessíveis** em todos os formulários para orientar o usuário em casos de erro ou sucesso.
 - **Assistente virtual** com chat fixo no canto inferior direito oferecendo respostas rápidas sobre cadastro, vagas e canais de atendimento.
@@ -75,6 +78,13 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
   - Recebe JSON com `email` e `senha`.
   - Em caso de sucesso devolve `{ "candidate": { ... } }` com nome e área de interesse, permitindo que o front-end registre a sessão.
   - Retorna `401` se as credenciais estiverem incorretas e `400` quando o payload estiver incompleto.
+- `POST /api/applications`
+  - Recebe JSON com `email`, `jobId` e `jobTitle` enviados pela página autenticada.
+  - Registra ou atualiza a candidatura no banco, mantendo o status inicial como `em_analise`.
+- `GET /api/admin/applications`
+  - Requer cabeçalho `X-Admin-Token` obtido após login de administrador e retorna a lista de candidaturas com resumo por vaga.
+- `POST /api/admin/applications/<id>/status`
+  - Requer `X-Admin-Token` e JSON `{ "status": "aceito" | "recusado" | "em_analise" }` para atualizar o processo.
 
 ## Integração front-end com a API
 - O `login.js` envia as credenciais para `/api/login`, salva o e-mail mais recente em `localStorage` (auto preenchimento) e registra o objeto `idealSessionUser` em `sessionStorage` com `email`, `nome` e `areaInteresse`. Esse objeto é consumido pelas demais páginas para garantir que apenas usuários autenticados avancem para `home.html`, `cadastro.html` e `perfil.html`.
@@ -85,6 +95,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
   - **`cadastro.html`** e **`perfil.html`** reaproveitam o mesmo endpoint `POST /api/candidates` para criar/atualizar registros, exibem mensagens de sucesso/erro e mantêm os campos de e-mail preenchidos com base na sessão ativa.
   - **`perfil.html`** utiliza `GET /api/candidates/<email>` ao carregar para apresentar o resumo salvo, permitir upload opcional de um novo currículo e sincronizar os alertas de vagas.
 - Em todos os formulários, o feedback visual informa quando o currículo está “em análise”, quando alertas estão ativos e quando uma senha precisa ser reajustada.
+- O painel administrativo (`admin.html`) utiliza `/api/login` com conta privilegiada (variáveis `IDEAL_ADMIN_EMAIL` e `IDEAL_ADMIN_PASSWORD`, padrões `admin@idealempregos.test`/`admin123`) e, após autenticado, consulta `/api/admin/applications` para exibir totalizadores e permite atualizar status via `/api/admin/applications/<id>/status`.
 
 ## Como usar o login e as recomendações
 1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou, após autenticar-se, abra a página "Cadastre seu currículo" pelo menu principal) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.

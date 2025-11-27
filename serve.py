@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import secrets
+import time
 import socket
 import sys
 import webbrowser
@@ -18,7 +20,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
 from socketserver import TCPServer, ThreadingMixIn
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import unquote
 
 import cgi
@@ -28,6 +30,9 @@ import storage
 
 class ThreadedTCPServer(ThreadingMixIn, TCPServer):
     daemon_threads = True
+
+
+ADMIN_SESSIONS: dict[str, dict[str, float]] = {}
 
 
 class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -52,6 +57,17 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response)
 
+    def _create_admin_session(self, email: str) -> str:
+        token = secrets.token_urlsafe(32)
+        ADMIN_SESSIONS[token] = {"email": email, "created_at": time.time()}
+        return token
+
+    def _require_admin(self) -> Optional[str]:
+        token = (self.headers.get("X-Admin-Token", "") or "").strip()
+        if not token or token not in ADMIN_SESSIONS:
+            return None
+        return ADMIN_SESSIONS[token]["email"]
+
     # ---- API handlers ------------------------------------------------
 
     def do_POST(self) -> None:  # noqa: D401 - behavior documented via helper
@@ -63,12 +79,24 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
             self._handle_login()
             return
 
+        if self.path == "/api/applications":
+            self._handle_save_application()
+            return
+
+        if self.path.startswith("/api/admin/applications/"):
+            self._handle_application_status_update()
+            return
+
         super().do_POST()
 
     def do_GET(self) -> None:
         if self.path.startswith("/api/candidates/"):
             email = unquote(self.path.split("/api/candidates/", 1)[1])
             self._handle_get_candidate(email)
+            return
+
+        if self.path == "/api/admin/applications":
+            self._handle_admin_applications()
             return
 
         super().do_GET()
@@ -206,7 +234,124 @@ class ProjectHTTPRequestHandler(SimpleHTTPRequestHandler):
             )
             return
 
-        self._send_json({"candidate": candidate, "message": "Login realizado com sucesso."})
+        response = {"candidate": candidate, "message": "Login realizado com sucesso."}
+
+        if candidate.get("isAdmin"):
+            response["adminToken"] = self._create_admin_session(candidate["email"])
+
+        self._send_json(response)
+
+    def _handle_save_application(self) -> None:
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length)
+
+        try:
+            data = json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._send_json({"message": "Formato de candidatura inválido."}, status=HTTPStatus.BAD_REQUEST)
+            return
+
+        email = str(data.get("email", "")).strip()
+        job_id = str(data.get("jobId", "")).strip()
+        job_title = str(data.get("jobTitle", "")).strip()
+
+        try:
+            application = storage.upsert_application(email, job_id, job_title)
+        except storage.ValidationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except Exception as exc:  # pragma: no cover - defensive guard
+            self.log_error("%s", str(exc))
+            self._send_json(
+                {"message": "Não foi possível registrar a candidatura agora."},
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+            return
+
+        self._send_json({"application": application, "message": "Candidatura registrada."})
+
+    def _handle_admin_applications(self) -> None:
+        admin_email = self._require_admin()
+        if not admin_email:
+            self._send_json({"message": "Acesso restrito a administradores."}, status=HTTPStatus.UNAUTHORIZED)
+            return
+
+        try:
+            applications = storage.list_applications()
+        except Exception as exc:  # pragma: no cover - defensive guard
+            self.log_error("%s", str(exc))
+            self._send_json(
+                {"message": "Não foi possível carregar as candidaturas."},
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+            return
+
+        summary: dict[str, dict[str, Any]] = {}
+        for app in applications:
+            job_key = app["jobId"]
+            summary.setdefault(
+                job_key,
+                {
+                    "jobId": app["jobId"],
+                    "jobTitle": app.get("jobTitle", ""),
+                    "total": 0,
+                    "aceitos": 0,
+                    "recusados": 0,
+                    "emAnalise": 0,
+                },
+            )
+            bucket = summary[job_key]
+            bucket["total"] += 1
+            status = app.get("status")
+            if status == "aceito":
+                bucket["aceitos"] += 1
+            elif status == "recusado":
+                bucket["recusados"] += 1
+            else:
+                bucket["emAnalise"] += 1
+
+        self._send_json(
+            {"applications": applications, "summary": list(summary.values()), "admin": admin_email}
+        )
+
+    def _handle_application_status_update(self) -> None:
+        admin_email = self._require_admin()
+        if not admin_email:
+            self._send_json({"message": "Acesso restrito a administradores."}, status=HTTPStatus.UNAUTHORIZED)
+            return
+
+        parts = self.path.rstrip("/").split("/")
+        try:
+            application_id = int(parts[-2])
+        except (ValueError, IndexError):
+            self._send_json({"message": "Identificador de candidatura inválido."}, status=HTTPStatus.BAD_REQUEST)
+            return
+
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length)
+
+        try:
+            data = json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._send_json({"message": "Formato de atualização inválido."}, status=HTTPStatus.BAD_REQUEST)
+            return
+
+        status_value = str(data.get("status", "")).strip()
+
+        try:
+            application = storage.update_application_status(application_id, status_value)
+        except storage.ValidationError as exc:
+            self._send_json({"message": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+            return
+        except Exception as exc:  # pragma: no cover - defensive guard
+            self.log_error("%s", str(exc))
+            self._send_json(
+                {"message": "Não foi possível atualizar a candidatura."},
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+            return
+
+        self._send_json({"application": application, "message": "Status atualizado.", "admin": admin_email})
 
 
 def find_available_port(preferred_port: int) -> int:
