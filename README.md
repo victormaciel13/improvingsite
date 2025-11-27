@@ -95,7 +95,7 @@ Este projeto contém a landing page reformulada da Ideal Empregos com foco em pr
   - **`cadastro.html`** e **`perfil.html`** reaproveitam o mesmo endpoint `POST /api/candidates` para criar/atualizar registros, exibem mensagens de sucesso/erro e mantêm os campos de e-mail preenchidos com base na sessão ativa.
   - **`perfil.html`** utiliza `GET /api/candidates/<email>` ao carregar para apresentar o resumo salvo, permitir upload opcional de um novo currículo e sincronizar os alertas de vagas.
 - Em todos os formulários, o feedback visual informa quando o currículo está “em análise”, quando alertas estão ativos e quando uma senha precisa ser reajustada.
-- O painel administrativo (`admin.html`) utiliza `/api/login` com conta privilegiada (variáveis `IDEAL_ADMIN_EMAIL` e `IDEAL_ADMIN_PASSWORD`, padrões `admin@idealempregos.test`/`admin123`) e, após autenticado, consulta `/api/admin/applications` para exibir totalizadores e permite atualizar status via `/api/admin/applications/<id>/status`.
+- O painel administrativo (`admin.html`) utiliza `/api/login` com conta privilegiada (variáveis `IDEAL_ADMIN_EMAIL` e `IDEAL_ADMIN_PASSWORD`, padrões `admideal`/`adm@ideal450$`) e, após autenticado, consulta `/api/admin/applications` para exibir totalizadores e permite atualizar status via `/api/admin/applications/<id>/status`.
 
 ## Como usar o login e as recomendações
 1. **Cadastro inicial:** utilize a aba “Quero me cadastrar” em `index.html` (ou, após autenticar-se, abra a página "Cadastre seu currículo" pelo menu principal) com nome, e-mail, área de interesse, currículo e uma senha com pelo menos 6 caracteres.

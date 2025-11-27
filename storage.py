@@ -190,30 +190,31 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
 
 
 def _ensure_default_admin(conn: sqlite3.Connection) -> None:
-    """Create or refresh a default admin account when configured."""
+    """Create or refresh the default admin account when configured."""
 
-    email = os.getenv(ADMIN_EMAIL_ENV, "admin@idealempregos.test").strip()
-    password = os.getenv(ADMIN_PASSWORD_ENV, "admin123").strip()
+    email = os.getenv(ADMIN_EMAIL_ENV, "admideal").strip()
+    password = os.getenv(ADMIN_PASSWORD_ENV, "adm@ideal450$").strip()
 
     if not email or not password:
         return
 
     conn.row_factory = sqlite3.Row
+    senha_hash = _hash_password(password)
+
     existing = conn.execute("SELECT * FROM candidates WHERE email = ?", (email,)).fetchone()
 
     if existing:
         conn.execute(
             """
             UPDATE candidates
-            SET is_admin = 1, atualizado_em = CURRENT_TIMESTAMP
+            SET is_admin = 1, senha_hash = ?, atualizado_em = CURRENT_TIMESTAMP
             WHERE email = ?
             """,
-            (email,),
+            (senha_hash, email),
         )
         conn.commit()
         return
 
-    senha_hash = _hash_password(password)
     conn.execute(
         """
         INSERT INTO candidates (nome, email, telefone, area_interesse, recebe_alertas, curriculo_path, senha_hash, is_admin)
